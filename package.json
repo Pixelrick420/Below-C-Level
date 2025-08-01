@@ -16,6 +16,10 @@
       {
         "command": "below-c-level.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "below-c-level.getJoke",
+        "title": "Get Joke"
       }
     ]
   },
