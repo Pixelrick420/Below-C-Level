@@ -3,6 +3,7 @@
   "displayName": "below_c_level",
   "description": "The most useless VS Code extension ever created",
   "version": "0.0.1",
+  "publisher": "Theerttha",
   "engines": {
     "vscode": "^1.102.0"
   },
@@ -54,7 +55,7 @@
         "title": "Get comments"
       },
       {
-        "command": "below-c-level.fibonacci",
+        "command": "below-c-level.fibonacciIndent",
         "title": "Below C Level: Fibonacci"
       }
     ],
@@ -62,22 +63,22 @@
       {
         "key": "up",
         "command": "below-c-level.snake.up",
-        "when": "below-c-level.snakeActive"
+        "when": "editorTextFocus"
       },
       {
-        "key": "down", 
+        "key": "down",
         "command": "below-c-level.snake.down",
-        "when": "below-c-level.snakeActive"
+        "when": "editorTextFocus"
       },
       {
         "key": "left",
-        "command": "below-c-level.snake.left", 
-        "when": "below-c-level.snakeActive"
+        "command": "below-c-level.snake.left",
+        "when": "editorTextFocus"
       },
       {
         "key": "right",
         "command": "below-c-level.snake.right",
-        "when": "below-c-level.snakeActive"
+        "when": "editorTextFocus"
       }
     ],
     "configuration": {
@@ -114,11 +115,6 @@
           "type": "number",
           "default": 5000,
           "description": "Delay before auto name change in milliseconds"
-        },
-        "belowCLevel.autoFibonacci": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically apply Fibonacci indentation to Python files"
         }
       }
     }

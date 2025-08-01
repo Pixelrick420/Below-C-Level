@@ -17,7 +17,6 @@ export function activateSnake(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     // Register arrow key commands once when extension activates
-    // They do nothing when game is not active
     const up = vscode.commands.registerCommand('below-c-level.snake.up', () => {
         if (gameActive && currentDirection.line !== 1) currentDirection = { line: -1, character: 0 };
     });
@@ -67,7 +66,7 @@ function startRandomTimer(context: vscode.ExtensionContext) {
     const spawnChance = config.get<number>('snakeSpawnChance', 0.1);
 
     // Random time between 10–100 seconds
-    const randomTime = (Math.random() * 90 + 10) * 10;
+    const randomTime = (Math.random() * 90 + 10) * 1000;
 
     gameTimer = setTimeout(() => {
         if (!gameActive && Math.random() < spawnChance) {
@@ -97,8 +96,6 @@ function startSnake(context: vscode.ExtensionContext) {
     }
 
     gameActive = true;
-    // Set context key to enable keybindings
-    vscode.commands.executeCommand('setContext', 'below-c-level.snakeActive', true);
 
     const visible = safeEditor.visibleRanges[0];
     const middleLine = Math.floor((visible.start.line + visible.end.line) / 2);
@@ -222,8 +219,6 @@ function startSnake(context: vscode.ExtensionContext) {
 
     function stop() {
         gameActive = false;
-        // Clear context key to disable keybindings
-        vscode.commands.executeCommand('setContext', 'below-c-level.snakeActive', false);
         if (interval) {
             clearInterval(interval);
             interval = undefined;

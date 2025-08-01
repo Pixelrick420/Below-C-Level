@@ -44,10 +44,10 @@ export function getIdentifiers(pythonCode: string): string[] {
     // Find user-defined functions first (functions defined in this file)
     const userDefinedFunctions = findUserDefinedFunctions(cleanedCode);
     
-    // Find variables from assignments and other contexts  
+    // Find variables from assignments and other contexts
     const variables = findVariables(cleanedCode);
     
-    // Find user-defined import aliases (only "as" aliases, not regular imports)
+    // Find import aliases
     const importAliases = findImportAliases(cleanedCode);
     
     // Combine all identifiers
@@ -67,8 +67,7 @@ function findUserDefinedFunctions(code: string): Set<string> {
     const functions = new Set<string>();
     
     // Match function definitions: def function_name(
-    // Use word boundaries and better whitespace handling
-    const functionPattern = /(?:^|\n)\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g;
+    const functionPattern = /^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
     
     let match;
     while ((match = functionPattern.exec(code)) !== null) {
@@ -81,121 +80,48 @@ function findUserDefinedFunctions(code: string): Set<string> {
 function findVariables(code: string): Set<string> {
     const variables = new Set<string>();
     
-    // Split code into lines to handle indentation-based parsing better
-    const lines = code.split('\n');
-    
-    for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (!trimmedLine || trimmedLine.startsWith('#')) continue;
-        
-        // ANY assignment pattern - captures ALL user variables being assigned
-        // This includes: result = numpy.array(), x = 5, my_var = func(), etc.
-        const assignmentPattern = /^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*=/;
-        let match = assignmentPattern.exec(trimmedLine);
-        if (match) {
-            const varName = match[2];
-            // Don't skip any user-defined variable names
-            variables.add(varName);
-            continue;
-        }
+    // Pattern for various assignment contexts
+    const patterns = [
+        // Simple assignment: x = 1
+        /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=/gm,
         
         // Multiple assignment: x, y = 1, 2 or x, y, z = func()
-        const multipleAssignment = /^(\s*)([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)+)\s*=/;
-        match = multipleAssignment.exec(trimmedLine);
-        if (match) {
-            const vars = match[2].split(',').map(v => v.trim());
-            vars.forEach(v => {
-                if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v)) {
-                    variables.add(v);
-                }
-            });
-            continue;
-        }
+        /^\s*([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)+)\s*=/gm,
         
         // For loop variables: for x in range(10):
-        const forLoop = /^(\s*)for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+/;
-        match = forLoop.exec(trimmedLine);
-        if (match) {
-            variables.add(match[2]);
-            continue;
-        }
+        /for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+/g,
         
         // For loop with multiple variables: for x, y in pairs:
-        const forLoopMultiple = /^(\s*)for\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)+)\s+in\s+/;
-        match = forLoopMultiple.exec(trimmedLine);
-        if (match) {
-            const vars = match[2].split(',').map(v => v.trim());
-            vars.forEach(v => {
-                if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v)) {
-                    variables.add(v);
-                }
-            });
-            continue;
-        }
+        /for\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)+)\s+in\s+/g,
         
         // With statement variables: with open('file') as f:
-        const withStatement = /^(\s*)with\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/;
-        match = withStatement.exec(trimmedLine);
-        if (match) {
-            variables.add(match[2]);
-            continue;
-        }
+        /with\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
         
         // Class definitions: class MyClass:
-        const classDefinition = /^(\s*)class\s+([a-zA-Z_][a-zA-Z0-9_]*)/;
-        match = classDefinition.exec(trimmedLine);
-        if (match) {
-            variables.add(match[2]);
-            continue;
-        }
+        /^\s*class\s+([a-zA-Z_][a-zA-Z0-9_]*)/gm,
         
         // Exception handling: except Exception as e:
-        const exceptionHandling = /^(\s*)except\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/;
-        match = exceptionHandling.exec(trimmedLine);
-        if (match) {
-            variables.add(match[2]);
-            continue;
-        }
-        
-        // Lambda assignments: func = lambda x: x + 1
-        const lambdaAssignment = /^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*lambda/;
-        match = lambdaAssignment.exec(trimmedLine);
-        if (match) {
-            variables.add(match[2]);
-            continue;
-        }
-        
-        // Function parameters in lambda: lambda x, y: x + y
-        const lambdaParams = /lambda\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)*)\s*:/;
-        match = lambdaParams.exec(line);
-        if (match) {
-            const params = match[1].split(',').map(p => p.trim());
-            params.forEach(p => {
-                if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(p)) {
-                    variables.add(p);
-                }
-            });
-        }
-    }
+        /except\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g
+    ];
     
-    // Also find function parameters from function definitions
-    const functionParams = /def\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(([^)]*)\)/g;
-    let match;
-    while ((match = functionParams.exec(code)) !== null) {
-        const params = match[1];
-        if (params.trim()) {
-            // Split by comma and extract parameter names
-            const paramList = params.split(',');
-            for (const param of paramList) {
-                const cleanParam = param.trim();
-                // Handle default parameters: x=5, *args, **kwargs
-                const paramMatch = cleanParam.match(/^(\*{0,2})([a-zA-Z_][a-zA-Z0-9_]*)/);
-                if (paramMatch && paramMatch[2] !== 'self') { // Skip 'self' parameter
-                    variables.add(paramMatch[2]);
-                }
+    patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(code)) !== null) {
+            const matched = match[1];
+            
+            // Handle multiple variables (x, y, z)
+            if (matched.includes(',')) {
+                const vars = matched.split(',').map(v => v.trim());
+                vars.forEach(v => {
+                    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v)) {
+                        variables.add(v);
+                    }
+                });
+            } else {
+                variables.add(matched);
             }
         }
-    }
+    });
     
     return variables;
 }
@@ -203,30 +129,23 @@ function findVariables(code: string): Set<string> {
 function findImportAliases(code: string): Set<string> {
     const aliases = new Set<string>();
     
-    // ONLY find user-defined aliases with "as" keyword
-    // These are safe to change because they're user-created names
-    
     // Match import aliases: import module as alias
     const importAsPattern = /import\s+[a-zA-Z_][a-zA-Z0-9_.]*\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
     
     // Match from import aliases: from module import name as alias
-    const fromImportAsPattern = /from\s+[a-zA-Z_][a-zA-Z0-9_.]*\s+import\s+[^,\n]+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
+    const fromImportAsPattern = /from\s+[a-zA-Z_][a-zA-Z0-9_.]*\s+import\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
     
     let match;
     
-    // Find import aliases - these are user-defined names
+    // Find import aliases
     while ((match = importAsPattern.exec(code)) !== null) {
         aliases.add(match[1]);
     }
     
-    // Find from import aliases - these are user-defined names
+    // Find from import aliases
     while ((match = fromImportAsPattern.exec(code)) !== null) {
         aliases.add(match[1]);
     }
-    
-    // DO NOT include regular imports like "import numpy" because:
-    // - "numpy" is the actual module name, changing it breaks the code
-    // - Same for "from math import sin" - "sin" is the actual function name
     
     return aliases;
 }
@@ -237,40 +156,35 @@ function removeCommentsAndStrings(code: string): string {
     
     while (i < code.length) {
         const char = code[i];
+        const nextChar = i + 1 < code.length ? code[i + 1] : '';
         
-        // Handle triple-quoted strings (docstrings)
-        if ((char === '"' || char === "'") && i + 2 < code.length) {
+        // Handle triple-quoted strings
+        if (char === '"' || char === "'") {
             const quote = char;
             if (code.substr(i, 3) === quote.repeat(3)) {
                 // Skip triple-quoted string
                 i += 3;
-                while (i <= code.length - 3) {
+                while (i < code.length - 2) {
                     if (code.substr(i, 3) === quote.repeat(3)) {
                         i += 3;
                         break;
                     }
-                    if (code[i] === '\n') {
-                        result += '\n'; // Preserve line breaks for line-based parsing
-                    }
                     i++;
                 }
                 continue;
-            }
-        }
-        
-        // Handle regular strings
-        if (char === '"' || char === "'") {
-            const quote = char;
-            i++;
-            while (i < code.length && code[i] !== quote) {
-                if (code[i] === '\\') {
-                    i += 2; // Skip escaped character
-                } else {
-                    i++;
+            } else {
+                // Skip regular string
+                i++;
+                while (i < code.length && code[i] !== quote) {
+                    if (code[i] === '\\') {
+                        i += 2; // Skip escaped character
+                    } else {
+                        i++;
+                    }
                 }
+                if (i < code.length) i++; // Skip closing quote
+                continue;
             }
-            if (i < code.length) i++; // Skip closing quote
-            continue;
         }
         
         // Handle comments
@@ -294,16 +208,6 @@ function removeCommentsAndStrings(code: string): string {
 }
 
 function isLikelyBuiltin(identifier: string): boolean {
-    // If it's already a shakespearean insult (contains underscores and looks like our format)
-    // then it's a user identifier that was previously transformed - DON'T filter it out
-    if (identifier.includes('_') && identifier.split('_').length === 3) {
-        // Check if it matches our shakespearean pattern (three parts separated by underscores)
-        const parts = identifier.split('_');
-        if (parts.length === 3 && parts.every(part => /^[a-zA-Z]+$/.test(part))) {
-            return false; // Don't filter out - this is likely a transformed identifier
-        }
-    }
-    
     // Additional heuristics to filter out likely built-ins or library functions
     
     // Common patterns for built-ins or library functions
@@ -319,7 +223,7 @@ function isLikelyBuiltin(identifier: string): boolean {
         }
     }
     
-    // Common library prefixes/suffixes - but exclude already transformed identifiers
+    // Common library prefixes/suffixes
     const commonLibraryParts = [
         'os', 'sys', 'json', 'math', 'random', 'time', 'datetime', 're', 'collections',
         'itertools', 'functools', 'operator', 'pathlib', 'urllib', 'http', 'socket',
@@ -330,7 +234,7 @@ function isLikelyBuiltin(identifier: string): boolean {
     
     const lowerIdentifier = identifier.toLowerCase();
     for (const part of commonLibraryParts) {
-        if (lowerIdentifier === part || lowerIdentifier.includes(part)) {
+        if (lowerIdentifier.includes(part)) {
             return true;
         }
     }
