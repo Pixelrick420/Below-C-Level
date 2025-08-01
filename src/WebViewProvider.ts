@@ -61,22 +61,25 @@ export class WebViewProvider {
     }
 
     private static updateContent(extensionUri: vscode.Uri) {
-        if (!WebViewProvider.currentPanel) {
-            return;
-        }
+    if (!WebViewProvider.currentPanel) return;
 
-        const config = vscode.workspace.getConfiguration('belowCLevel');
-        const settings = {
-            autoNameChange: config.get('autoNameChange'),
-            autoSnake: config.get('autoSnake'),
-            autoJoke: config.get('autoJoke'),
-            snakeSpawnChance: config.get('snakeSpawnChance'),
-            jokeFrequency: config.get('jokeFrequency'),
-            nameChangeDelay: config.get('nameChangeDelay')
-        };
+    const config = vscode.workspace.getConfiguration('belowCLevel');
+    const settings = {
+        autoNameChange: config.get<boolean>('autoNameChange'),
+        autoSnake: config.get<boolean>('autoSnake'),
+        autoJoke: config.get<boolean>('autoJoke'),
+        snakeSpawnChance: config.get<number>('snakeSpawnChance'),
+        jokeFrequency: config.get<number>('jokeFrequency'),
+        nameChangeDelay: config.get<number>('nameChangeDelay'),
+        autoFibonacci: config.get<boolean>('autoFibonacci'),
+        fibonacciDelay: config.get<number>('fibonacciDelay')
+    };
 
-        WebViewProvider.currentPanel.webview.html = WebViewProvider.getWebviewContent(settings);
-    }
+    console.log("Settings being passed to WebView:", settings);
+
+    WebViewProvider.currentPanel.webview.html =
+        WebViewProvider.getWebviewContent(settings);
+}
 
     private static getWebviewContent(settings: any): string {
         return `<!DOCTYPE html>
@@ -390,6 +393,36 @@ export class WebViewProvider {
                     <button class="btn" onclick="runCommand('below-c-level.getJoke')">Tell joke</button>
                 </div>
             </div>
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">Fibonacci Indentation</div>
+                    <div class="status ${settings.autoFibonacci ? 'enabled' : ''}">
+                        ${settings.autoFibonacci ? 'Auto enabled' : 'Manual only'}
+                    </div>
+                </div>
+                <div class="feature-description">
+                    Indents code using Fibonacci spacing for each nested block
+                </div>
+                <div class="controls">
+                    <div class="control-row">
+                        <span class="control-label">Auto tab</span>
+                        <div class="toggle-switch ${settings.autoFibonacci ? 'active' : ''}"
+                            onclick="updateSetting('autoFibonacci', ${!settings.autoFibonacci})">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <span class="control-label">Delay (ms)</span>
+                        <input type="number" class="number-input" value="${settings.fibonacciDelay}"
+                            onchange="updateSetting('fibonacciDelay', parseInt(this.value))"
+                            min="1000" max="60000" step="1000">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn" onclick="runCommand('below-c-level.fibonacciIndent')">Run now</button>
+                </div>
+</div>
+
         </div>
     </div>
 

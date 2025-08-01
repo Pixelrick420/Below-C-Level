@@ -3,11 +3,13 @@ import { activateJoke } from './Joke/main';
 import { activateNameChanger } from './NameChanger/main';
 import { activateSnake } from './Snake/main';
 import { WebViewProvider } from './WebViewProvider';
+import { addFibonacci } from './Fibonacci/main';
 
 export function activate(context: vscode.ExtensionContext) {
 	activateJoke(context);
 	activateNameChanger(context);
 	activateSnake(context);
+	addFibonacci(context);
 
 	const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
 		WebViewProvider.createOrShow(context.extensionUri);
@@ -17,8 +19,6 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(openPanelCommand, openSettingsCommand);
-
-	vscode.commands.executeCommand('below-c-level.openDashboard');
 
 	const configChangeListener = vscode.workspace.onDidChangeConfiguration(event => {
 		if (event.affectsConfiguration('belowCLevel')) {
