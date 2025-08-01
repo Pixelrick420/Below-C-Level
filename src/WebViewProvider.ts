@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 export class WebViewProvider {
     private static currentPanel: vscode.WebviewPanel | undefined;
+    private static nsfwJokesEnabled: boolean = false;
 
     public static createOrShow(extensionUri: vscode.Uri) {
         const column = vscode.window.activeTextEditor
@@ -49,6 +50,17 @@ export class WebViewProvider {
                     case 'runCommand':
                         vscode.commands.executeCommand(message.commandId);
                         return;
+                    case 'toggleNsfwJokes':
+                        WebViewProvider.nsfwJokesEnabled = message.enabled;
+                        // Emit event to notify extension.ts
+                        vscode.commands.executeCommand('below-c-level.nsfwJokesToggled', message.enabled);
+                        // Update the webview to reflect the change
+                        setTimeout(() => {
+                            if (WebViewProvider.currentPanel) {
+                                WebViewProvider.updateContent(extensionUri);
+                            }
+                        }, 100);
+                        return;
                 }
             },
             undefined
@@ -58,6 +70,11 @@ export class WebViewProvider {
         panel.onDidDispose(() => {
             WebViewProvider.currentPanel = undefined;
         }, null);
+    }
+
+    // Public getter for NSFW jokes status
+    public static isNsfwJokesEnabled(): boolean {
+        return WebViewProvider.nsfwJokesEnabled;
     }
 
     private static updateContent(extensionUri: vscode.Uri) {
@@ -280,6 +297,7 @@ export class WebViewProvider {
             background-color: var(--vscode-button-secondaryHoverBackground);
         }
 
+
         .status {
             font-size: 12px;
             color: var(--vscode-descriptionForeground);
@@ -287,6 +305,13 @@ export class WebViewProvider {
 
         .status.enabled {
             color: var(--vscode-foreground);
+        }
+
+        .sub-controls {
+            margin-left: 16px;
+            padding-left: 16px;
+            border-left: 2px solid var(--vscode-panel-border);
+            margin-top: 12px;
         }
     </style>
 </head>
@@ -385,6 +410,15 @@ export class WebViewProvider {
                 <div class="actions">
                     <button class="btn" onclick="runCommand('below-c-level.getJoke')">Tell joke</button>
                 </div>
+                <div class="sub-controls">
+                    <div class="control-row">
+                        <span class="control-label">NSFW Jokes</span>
+                        <button class="btn ${WebViewProvider.nsfwJokesEnabled ? 'btn-warning' : 'btn-secondary'}" 
+                                onclick="toggleNsfwJokes()">
+                            ${WebViewProvider.nsfwJokesEnabled ? 'Disable NSFW' : 'Enable NSFW'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="feature">
@@ -426,6 +460,14 @@ export class WebViewProvider {
             vscode.postMessage({
                 command: 'runCommand',
                 commandId: commandId
+            });
+        }
+
+        function toggleNsfwJokes() {
+            const currentState = ${WebViewProvider.nsfwJokesEnabled};
+            vscode.postMessage({
+                command: 'toggleNsfwJokes',
+                enabled: !currentState
             });
         }
 
