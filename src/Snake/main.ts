@@ -11,8 +11,6 @@ let gameActive = false;
 export function snakeGame(context: vscode.ExtensionContext) {
     // Start random timer when extension activates
     startRandomTimer(context);
-
-    // Manual command for testing
     const disposable = vscode.commands.registerCommand('below-c-level.snake', () => {
         startSnake(context);
     });
@@ -22,18 +20,24 @@ export function snakeGame(context: vscode.ExtensionContext) {
         if (gameTimer) {
             clearTimeout(gameTimer);
         }
-        
-        // Random time between 10-100 seconds
+
+        // Random time between 10–100 seconds
         const randomTime = (Math.random() * 90 + 10) * 1000;
-        
+
         gameTimer = setTimeout(() => {
-            if (!gameActive && vscode.window.activeTextEditor) {
-                startSnake(context);
+            if (!gameActive) {
+                const editor = vscode.window.activeTextEditor;
+                if (editor) {
+                    startSnake(context);
+                }
+                // If no editor is open → do nothing, just wait for next tick
             }
-            // Start next timer regardless
+
+            // Always schedule the next spawn regardless
             startRandomTimer(context);
         }, randomTime);
     }
+
 
     function startSnake(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
@@ -46,14 +50,12 @@ export function snakeGame(context: vscode.ExtensionContext) {
         const totalLines = doc.lineCount;
         const maxLineLength = Math.max(...Array.from({ length: totalLines }, (_, i) => doc.lineAt(i).text.length));
 
-        // Ensure we have visible ranges
         if (!safeEditor.visibleRanges || safeEditor.visibleRanges.length === 0) {
             return;
         }
 
         gameActive = true;
 
-        // Spawn in middle of visible range
         const visible = safeEditor.visibleRanges[0];
         const middleLine = Math.floor((visible.start.line + visible.end.line) / 2);
         const lineText = doc.lineAt(middleLine).text;
@@ -61,33 +63,32 @@ export function snakeGame(context: vscode.ExtensionContext) {
 
         let snake: Position[] = [{ line: middleLine, character: middleChar }];
         let apple: Position = randomApple();
-        let direction: Position = { line: 0, character: 1 }; // Start moving right
+        let direction: Position = { line: 0, character: 1 };
         let interval: NodeJS.Timeout | undefined;
         let commandDisposables: vscode.Disposable[] = [];
 
         // --- Input handling ---
-        const up = vscode.commands.registerCommand('below-c-level.snake.up', () => { 
-            if (gameActive && direction.line !== 1) direction = { line: -1, character: 0 }; 
+        const up = vscode.commands.registerCommand('below-c-level.snake.up', () => {
+            if (gameActive && direction.line !== 1) direction = { line: -1, character: 0 };
         });
-        const down = vscode.commands.registerCommand('below-c-level.snake.down', () => { 
-            if (gameActive && direction.line !== -1) direction = { line: 1, character: 0 }; 
+        const down = vscode.commands.registerCommand('below-c-level.snake.down', () => {
+            if (gameActive && direction.line !== -1) direction = { line: 1, character: 0 };
         });
-        const left = vscode.commands.registerCommand('below-c-level.snake.left', () => { 
-            if (gameActive && direction.character !== 1) direction = { line: 0, character: -1 }; 
+        const left = vscode.commands.registerCommand('below-c-level.snake.left', () => {
+            if (gameActive && direction.character !== 1) direction = { line: 0, character: -1 };
         });
-        const right = vscode.commands.registerCommand('below-c-level.snake.right', () => { 
-            if (gameActive && direction.character !== -1) direction = { line: 0, character: 1 }; 
+        const right = vscode.commands.registerCommand('below-c-level.snake.right', () => {
+            if (gameActive && direction.character !== -1) direction = { line: 0, character: 1 };
         });
 
         commandDisposables.push(up, down, left, right);
         context.subscriptions.push(...commandDisposables);
 
-        // --- Core game logic ---
         function randomApple(): Position {
             const vis = safeEditor.visibleRanges[0];
             const minLine = vis.start.line;
             const maxLine = Math.min(vis.end.line - 1, totalLines - 1);
-            
+
             let attempts = 0;
             while (attempts < 50) {
                 const randLine = getRandomInt(minLine, maxLine);
@@ -98,15 +99,13 @@ export function snakeGame(context: vscode.ExtensionContext) {
                 }
                 attempts++;
             }
-            // Fallback
             return { line: minLine, character: 1 };
         }
 
         function draw() {
-            if (!gameActive) return;
+            if (!gameActive || !safeEditor) return;
 
             safeEditor.edit(editBuilder => {
-                // Pad lines so we always have a rectangle grid
                 for (let i = 0; i < doc.lineCount; i++) {
                     const lineText = doc.lineAt(i).text;
                     if (lineText.length < maxLineLength + 1) {
@@ -115,7 +114,6 @@ export function snakeGame(context: vscode.ExtensionContext) {
                     }
                 }
 
-                // Draw apple as 3x3 #
                 for (let dl = -1; dl <= 1; dl++) {
                     for (let dc = -1; dc <= 1; dc++) {
                         const line = apple.line + dl;
@@ -127,7 +125,6 @@ export function snakeGame(context: vscode.ExtensionContext) {
                     }
                 }
 
-                // Draw snake
                 snake.forEach(pos => {
                     if (pos.line >= 0 && pos.line < doc.lineCount && pos.character >= 0 && pos.character <= maxLineLength) {
                         const range = new vscode.Range(pos.line, pos.character, pos.line, pos.character + 1);
@@ -137,10 +134,8 @@ export function snakeGame(context: vscode.ExtensionContext) {
             });
         }
 
-
-
         function step() {
-            if (!gameActive) return;
+            if (!gameActive || !safeEditor) return;
 
             const head = snake[0];
             const newHead: Position = {
@@ -148,57 +143,50 @@ export function snakeGame(context: vscode.ExtensionContext) {
                 character: head.character + direction.character,
             };
 
-            // Bounds check
             if (newHead.line < 0 || newHead.line >= totalLines) {
-                gameOver("Snake hit the boundary!");
+                gameOver();
                 return;
             }
             if (newHead.character < 0 || newHead.character > maxLineLength) {
-                gameOver("Snake hit the edge!");
+                gameOver();
                 return;
             }
 
-            // Self collision
             if (snake.some(segment => segment.line === newHead.line && segment.character === newHead.character)) {
-                gameOver("Snake ate itself!");
+                gameOver();
                 return;
             }
 
-            // Add new head
             snake.unshift(newHead);
 
-            // Apple collision (any square of 3×3)
             if (Math.abs(newHead.line - apple.line) <= 1 && Math.abs(newHead.character - apple.character) <= 1) {
                 victory();
                 return;
             }
 
-            // Look at char under new head
             const lineText = doc.lineAt(newHead.line).text;
             let currentChar: string | undefined;
             if (newHead.character < lineText.length) {
                 currentChar = lineText[newHead.character];
             }
 
-            if (currentChar && currentChar !== ' ' && currentChar !== '\t') {
-                // Ate code → grow (keep tail)
-            } else {
-                // Normal move → remove tail
+            if (!(currentChar && currentChar !== ' ' && currentChar !== '\t')) {
                 snake.pop();
             }
 
             draw();
         }
 
-
-        function gameOver(reason: string) {
+        function gameOver() {
             stop();
-            vscode.window.showWarningMessage(`Game Over!`);
+            vscode.window.showWarningMessage("Game Over! രാജവെമ്പാല died.");
+            startRandomTimer(context); // restart random spawn
         }
 
         function victory() {
             stop();
-            vscode.window.showInformationMessage("രാജവെമ്പാല defeated! Incident reported to mananthavady forest department");
+            vscode.window.showInformationMessage("രാജവെമ്പാല defeated! Incident reported to Mananthavady forest department");
+            startRandomTimer(context); // restart random spawn
         }
 
         function getRandomInt(min: number, max: number): number {
@@ -211,24 +199,23 @@ export function snakeGame(context: vscode.ExtensionContext) {
                 clearInterval(interval);
                 interval = undefined;
             }
-            // Don't dispose command handlers here - they're managed by context
+            commandDisposables.forEach(d => d.dispose());
+            commandDisposables = [];
         }
 
-        // Keep focus on editor during game
         const focusHandler = vscode.window.onDidChangeActiveTextEditor(e => {
             if (gameActive && e !== safeEditor) {
-                vscode.window.showTextDocument(safeEditor.document, { 
-                    viewColumn: safeEditor.viewColumn, 
-                    preserveFocus: false 
+                vscode.window.showTextDocument(safeEditor.document, {
+                    viewColumn: safeEditor.viewColumn,
+                    preserveFocus: false
                 });
             }
         });
         commandDisposables.push(focusHandler);
         context.subscriptions.push(focusHandler);
 
-        // Start the game!
-        draw(); // Initial draw
+        draw();
         interval = setInterval(step, 200);
-        vscode.window.showInformationMessage("🐍 Oh no! A wild രാജവെമ്പാല is attacking your code! Use arrow keys to guide it to the apple!");
+        vscode.window.showInformationMessage("Oh no! A wild രാജവെമ്പാല is attacking your code! Use arrow keys to guide it to the apple!");
     }
 }
