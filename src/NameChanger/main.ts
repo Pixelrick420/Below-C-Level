@@ -146,7 +146,7 @@ function getShakespearianInsult(): string {
         'knotty_pated', 'milk_livered', 'motley_minded', 'onion_eyed', 'plume_plucked', 'pottle_deep',
         'pox_marked', 'reeling_ripe', 'rough_hewn', 'rude_growing', 'rump_fed', 'shard_borne',
         'sheep_biting', 'spur_galled', 'swag_bellied', 'tardy_gaited', 'tickle_brained', 'toad_spotted',
-        'unchin_snouted', 'weather_bitten', 'whoreson', 'malmsey_nosed', 'rampallian', 'lily_livered'
+        'unchin_snouted', 'weather_bitten', 'malmsey_nosed', 'rampallian', 'lily_livered'
     ];
 
     const nouns = [
