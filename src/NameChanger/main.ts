@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import { getIdentifiers } from './python';
+import { getIdentifiers as getPythonIdentifiers } from './python';
+import { getIdentifiers as getCIdentifiers } from './c';
 
 export function nameChanger(context: vscode.ExtensionContext) {
     // Register the NameChanger command
-    let nameChangerDisposable = vscode.commands.registerCommand('below-c-level.nameChanger', () => {
+    let nameChangerDisposable = vscode.commands.registerCommand('below_c_level.nameChanger', () => {
         runNameChanger();
     });
 
@@ -31,6 +32,9 @@ function runNameChanger() {
         case 'py':
             handlePythonFile(editor);
             break;
+        case 'c':
+            handleCFile(editor);
+            break;
         // TODO: Add other file types as needed
         // case 'js':
         //     handleJavaScriptFile(editor);
@@ -46,52 +50,78 @@ async function handlePythonFile(editor: vscode.TextEditor) {
     
     try {
         // Get user-defined identifiers from the Python file
-        const identifiers = getIdentifiers(text);
+        const identifiers = getPythonIdentifiers(text);
         
         if (identifiers.length === 0) {
             vscode.window.showInformationMessage('No user-defined identifiers found to insult!');
             return;
         }
 
-        // Create mapping of original identifiers to Shakespearean insults
-        const identifierMap = new Map<string, string>();
-        const usedInsults = new Set<string>();
-        
-        for (const identifier of identifiers) {
-            let insult = getShakespearianInsult();
-            // Ensure we don't use the same insult twice
-            while (usedInsults.has(insult)) {
-                insult = getShakespearianInsult();
-            }
-            usedInsults.add(insult);
-            identifierMap.set(identifier, insult);
-        }
-
-        // Replace identifiers in the text, but preserve strings and comments
-        let newText = replaceIdentifiersPreservingStrings(text, identifierMap);
-
-        // Apply the changes to the editor
-        const fullRange = new vscode.Range(
-            document.positionAt(0),
-            document.positionAt(text.length)
-        );
-
-        await editor.edit(editBuilder => {
-            editBuilder.replace(fullRange, newText);
-        });
-
-        // Show success message with the mapping
-        const mappingString = Array.from(identifierMap.entries())
-            .map(([orig, insult]) => `${orig} → ${insult}`)
-            .join(', ');
-        
-        vscode.window.showInformationMessage(
-            `Successfully insulted ${identifiers.length} identifier(s)! ${mappingString}`
-        );
+        await processIdentifiers(editor, identifiers, text);
 
     } catch (error) {
         vscode.window.showErrorMessage(`Error processing Python file: ${error}`);
     }
+}
+
+async function handleCFile(editor: vscode.TextEditor) {
+    const document = editor.document;
+    const text = document.getText();
+    
+    try {
+        // Get user-defined identifiers from the C file
+        const identifiers = getCIdentifiers(text);
+        
+        if (identifiers.length === 0) {
+            vscode.window.showInformationMessage('No user-defined identifiers found to insult!');
+            return;
+        }
+
+        await processIdentifiers(editor, identifiers, text);
+
+    } catch (error) {
+        vscode.window.showErrorMessage(`Error processing C file: ${error}`);
+    }
+}
+
+async function processIdentifiers(editor: vscode.TextEditor, identifiers: string[], text: string) {
+    const document = editor.document;
+    
+    // Create mapping of original identifiers to Shakespearean insults
+    const identifierMap = new Map<string, string>();
+    const usedInsults = new Set<string>();
+    
+    for (const identifier of identifiers) {
+        let insult = getShakespearianInsult();
+        // Ensure we don't use the same insult twice
+        while (usedInsults.has(insult)) {
+            insult = getShakespearianInsult();
+        }
+        usedInsults.add(insult);
+        identifierMap.set(identifier, insult);
+    }
+
+    // Replace identifiers in the text, but preserve strings and comments
+    let newText = replaceIdentifiersPreservingStrings(text, identifierMap);
+
+    // Apply the changes to the editor
+    const fullRange = new vscode.Range(
+        document.positionAt(0),
+        document.positionAt(text.length)
+    );
+
+    await editor.edit(editBuilder => {
+        editBuilder.replace(fullRange, newText);
+    });
+
+    // Show success message with the mapping
+    const mappingString = Array.from(identifierMap.entries())
+        .map(([orig, insult]) => `${orig} → ${insult}`)
+        .join(', ');
+    
+    vscode.window.showInformationMessage(
+        `Successfully insulted ${identifiers.length} identifier(s)! ${mappingString}`
+    );
 }
 
 function getShakespearianInsult(): string {
