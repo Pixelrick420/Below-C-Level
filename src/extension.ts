@@ -3,13 +3,14 @@ import { activateJoke } from './Joke/main';
 import { activateNameChanger } from './NameChanger/main';
 import { activateSnake } from './Snake/main';
 import { WebViewProvider } from './WebViewProvider';
-import { addFibonacci } from './Fibonacci/main';
+import { activateFibonacci } from './Fibonacci/main';
+
 
 export function activate(context: vscode.ExtensionContext) {
 	activateJoke(context);
 	activateNameChanger(context);
 	activateSnake(context);
-	addFibonacci(context);
+	activateFibonacci(context);
 
 	const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
 		WebViewProvider.createOrShow(context.extensionUri);
