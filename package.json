@@ -52,6 +52,10 @@
       {
         "command": "below-c-level.generateComments",
         "title": "Get comments"
+      },
+      {
+        "command": "below-c-level.fibonacciIndent",
+        "title": "Below C Level: Fibonacci"
       }
     ],
     "keybindings": [
