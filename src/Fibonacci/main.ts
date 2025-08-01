@@ -28,8 +28,7 @@ function applyFibonacciIndent(doc: vscode.TextDocument, editor: vscode.TextEdito
     const edits: vscode.TextEdit[] = [];
     const lineCount = doc.lineCount;
     
-    // Track nesting levels based on actual code structure
-    const nestingStack: number[] = [0]; // Start with base level
+    const nestingStack: number[] = [0]; 
     
     for (let i = 0; i < lineCount; i++) {
         const line = doc.lineAt(i);
@@ -94,10 +93,10 @@ function applyFibonacciIndent(doc: vscode.TextDocument, editor: vscode.TextEdito
     }
 }
 
-export function addFibonacci(context: vscode.ExtensionContext) {
+export function activateFibonacci(context: vscode.ExtensionContext) {
     // Register manual command
     context.subscriptions.push(
-        vscode.commands.registerCommand('below-c-level.fibonacciIndent', async () => {
+        vscode.commands.registerCommand('below-c-level.fibonacci', async () => {
             const editor = vscode.window.activeTextEditor;
             if (!editor) {
                 vscode.window.showErrorMessage('No active editor found');
@@ -106,38 +105,48 @@ export function addFibonacci(context: vscode.ExtensionContext) {
             applyFibonacciIndent(editor.document, editor);
         })
     );
-    
-    // Auto-apply on save with delay
-    context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument(doc => {
-            const config = vscode.workspace.getConfiguration('belowCLevel');
-            const autoEnabled = config.get('autoFibonacci', false);
-            
-            if (autoEnabled) {
-                const delay: number = config.get('fibonacciDelay', 5000);
-                
-                setTimeout(() => {
-                    const editor = vscode.window.activeTextEditor;
-                    if (editor && editor.document === doc) {
-                        applyFibonacciIndent(doc, editor);
-                    }
-                }, delay);
-            }
-        })
-    );
+
+    // Listen for configuration changes
+    vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('belowCLevel.autoFibonacci')) {
+            setupAutoFibonacci();
+        }
+    });
+
+    // Listen for when text documents are opened
+    vscode.workspace.onDidOpenTextDocument(document => {
+        if (shouldAutoApplyFibonacci(document)) {
+            // Small delay to ensure the document is fully loaded
+            setTimeout(() => {
+                const editor = vscode.window.visibleTextEditors.find(e => e.document === document);
+                if (editor) {
+                    applyFibonacciIndent(document, editor);
+                }
+            }, 100);
+        }
+    });
+
+    // Listen for when the active editor changes
+    vscode.window.onDidChangeActiveTextEditor(editor => {
+        if (editor && shouldAutoApplyFibonacci(editor.document)) {
+            setTimeout(() => {
+                applyFibonacciIndent(editor.document, editor);
+            }, 100);
+        }
+    });
+
+    setupAutoFibonacci();
 }
 
-// Additional utility function to toggle auto-fibonacci
-export function addToggleAutoFibonacci(context: vscode.ExtensionContext) {
-    context.subscriptions.push(
-        vscode.commands.registerCommand('below-c-level.toggleAutoFibonacci', async () => {
-            const config = vscode.workspace.getConfiguration('belowCLevel');
-            const current = config.get('autoFibonacci', false);
-            await config.update('autoFibonacci', !current, vscode.ConfigurationTarget.Workspace);
-            
-            vscode.window.showInformationMessage(
-                `Auto Fibonacci Indent: ${!current ? 'Enabled' : 'Disabled'}`
-            );
-        })
-    );
+function setupAutoFibonacci() {
+    // This function can be used for any future auto-fibonacci setup if needed
+    // For now, the auto functionality is handled by the document event listeners
+}
+
+function shouldAutoApplyFibonacci(document: vscode.TextDocument): boolean {
+    const config = vscode.workspace.getConfiguration('belowCLevel');
+    const autoFibonacci = config.get<boolean>('autoFibonacci', false);
+    
+    // Only apply to Python files and only if auto mode is enabled
+    return autoFibonacci && document.languageId === 'python';
 }
