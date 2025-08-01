@@ -5,12 +5,14 @@ exports.deactivate = deactivate;
 const main_1 = require("./Joke/main");
 const main_2 = require("./NameChanger/main");
 const main_3 = require("./Snake/main");
+const main_4 = require("./CommentGenerator/main");
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 function activate(context) {
     (0, main_1.getJoke)(context);
     (0, main_2.nameChanger)(context);
     (0, main_3.snakeGame)(context);
+    (0, main_4.commentGenerator)(context);
 }
 // This method is called when your extension is deactivated
 function deactivate() { }

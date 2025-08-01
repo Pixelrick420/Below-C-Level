@@ -1,3 +1,4 @@
+
 import * as vscode from 'vscode';
 import { PythonCommentGenerator } from './python';
 
@@ -8,11 +9,11 @@ export class AddCommentsManager {
         this.pythonGenerator = new PythonCommentGenerator();
     }
 
-    async addComments(editor: vscode.TextEditor, apiKey: string): Promise<void> {
+    async addComments(editor: vscode.TextEditor): Promise<void> {
         const document = editor.document;
         
         if (document.languageId === 'python') {
-            await this.pythonGenerator.addPhilosophicalComments(editor, apiKey);
+            await this.pythonGenerator.addCommentsSequentially(editor);
         } else {
             throw new Error(`Unsupported language: ${document.languageId}`);
         }
@@ -24,7 +25,7 @@ export function commentGenerator(context: vscode.ExtensionContext) {
     const addCommentsManager = new AddCommentsManager();
 
     // Register the command for adding philosophical comments
-    let disposable = vscode.commands.registerCommand('below-c-level.addPhilosophicalComments', async () => {
+    let disposable = vscode.commands.registerCommand('below-c-level.generateComment', async () => {
         const editor = vscode.window.activeTextEditor;
         
         if (!editor) {
@@ -38,43 +39,16 @@ export function commentGenerator(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Check if API key is configured
-        const config = vscode.workspace.getConfiguration('below-c-level');
-        const apiKey = config.get<string>('groqApiKey');
-        
-        if (!apiKey) {
-            const result = await vscode.window.showInputBox({
-                prompt: 'Enter your Groq API Key',
-                password: true,
-                placeHolder: 'gsk_...'
-            });
-            
-            if (result) {
-                await config.update('groqApiKey', result, vscode.ConfigurationTarget.Global);
-                vscode.window.showInformationMessage('API key saved! Run the command again.');
-                return;
-            } else {
-                vscode.window.showErrorMessage('API key is required!');
-                return;
-            }
-        }
-
         vscode.window.showInformationMessage('Adding philosophical chaos to your code...');
         
         try {
-            await addCommentsManager.addComments(editor, apiKey);
+            await addCommentsManager.addComments(editor);
             vscode.window.showInformationMessage('Successfully added philosophical comments! Your code is now 10x more enlightened and 100x more useless!');
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to add comments: ${error}`);
         }
     });
 
-    // Register command to clear API key
-    let clearKeyDisposable = vscode.commands.registerCommand('below-c-level.clearApiKey', async () => {
-        const config = vscode.workspace.getConfiguration('below-c-level');
-        await config.update('groqApiKey', undefined, vscode.ConfigurationTarget.Global);
-        vscode.window.showInformationMessage('API key cleared!');
-    });
-
-    context.subscriptions.push(disposable, clearKeyDisposable);
+    context.subscriptions.push(disposable);
 }
+

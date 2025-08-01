@@ -41,6 +41,10 @@
       {
         "command": "below-c-level.snake.right",
         "title": "Snake Right"
+      },
+      {
+        "command": "below-c-level.generateComment",
+        "title": "Add comment"
       }
     ],
     "keybindings": [
