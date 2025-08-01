@@ -52,7 +52,7 @@
       },
       {
         "command": "below-c-level.generateComments",
-        "title": "Get comments"
+        "title": "Below C Level: Get comments"
       },
       {
         "command": "below-c-level.fibonacciIndent",
