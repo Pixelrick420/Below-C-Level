@@ -107,33 +107,39 @@ export function activateFibonacci(context: vscode.ExtensionContext) {
     );
 
     // Listen for configuration changes
-    vscode.workspace.onDidChangeConfiguration(e => {
-        if (e.affectsConfiguration('belowCLevel.autoFibonacci')) {
-            setupAutoFibonacci();
-        }
-    });
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('belowCLevel.autoFibonacci')) {
+                setupAutoFibonacci();
+            }
+        })
+    );
 
     // Listen for when text documents are opened
-    vscode.workspace.onDidOpenTextDocument(document => {
-        if (shouldAutoApplyFibonacci(document)) {
-            // Small delay to ensure the document is fully loaded
-            setTimeout(() => {
-                const editor = vscode.window.visibleTextEditors.find(e => e.document === document);
-                if (editor) {
-                    applyFibonacciIndent(document, editor);
-                }
-            }, 100);
-        }
-    });
+    context.subscriptions.push(
+        vscode.workspace.onDidOpenTextDocument(document => {
+            if (shouldAutoApplyFibonacci(document)) {
+                // Small delay to ensure the document is fully loaded
+                setTimeout(() => {
+                    const editor = vscode.window.visibleTextEditors.find(e => e.document === document);
+                    if (editor) {
+                        applyFibonacciIndent(document, editor);
+                    }
+                }, 100);
+            }
+        })
+    );
 
     // Listen for when the active editor changes
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-        if (editor && shouldAutoApplyFibonacci(editor.document)) {
-            setTimeout(() => {
-                applyFibonacciIndent(editor.document, editor);
-            }, 100);
-        }
-    });
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(editor => {
+            if (editor && shouldAutoApplyFibonacci(editor.document)) {
+                setTimeout(() => {
+                    applyFibonacciIndent(editor.document, editor);
+                }, 100);
+            }
+        })
+    );
 
     setupAutoFibonacci();
 }

@@ -10,6 +10,9 @@ let gameActive = false;
 let currentDirection: Position = { line: 0, character: 1 };
 
 export function activateSnake(context: vscode.ExtensionContext) {
+    // Set initial context state
+    vscode.commands.executeCommand('setContext', 'belowCLevel.snakeActive', false);
+
     // Register manual command
     const disposable = vscode.commands.registerCommand('below-c-level.snake', () => {
         startSnake(context);
@@ -102,6 +105,8 @@ function startSnake(context: vscode.ExtensionContext) {
     }
 
     gameActive = true;
+    // Enable snake controls
+    vscode.commands.executeCommand('setContext', 'belowCLevel.snakeActive', true);
 
     const visible = safeEditor.visibleRanges[0];
     const middleLine = Math.floor((visible.start.line + visible.end.line) / 2);
@@ -229,6 +234,9 @@ function startSnake(context: vscode.ExtensionContext) {
 
     function stop() {
         gameActive = false;
+        // Disable snake controls
+        vscode.commands.executeCommand('setContext', 'belowCLevel.snakeActive', false);
+        
         if (interval) {
             clearInterval(interval);
             interval = undefined;

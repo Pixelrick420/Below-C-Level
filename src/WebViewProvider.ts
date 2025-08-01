@@ -380,9 +380,6 @@ export class WebViewProvider {
                         </div>
                     </div>
                 </div>
-                <div class="actions">
-                    <button class="btn" onclick="runCommand('below-c-level.snake')">Spawn snake</button>
-                </div>
             </div>
 
             <div class="feature">

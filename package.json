@@ -55,7 +55,7 @@
         "title": "Below C Level: Get comments"
       },
       {
-        "command": "below-c-level.fibonacciIndent",
+        "command": "below-c-level.fibonacci",
         "title": "Below C Level: Fibonacci"
       }
     ],
@@ -63,22 +63,22 @@
       {
         "key": "up",
         "command": "below-c-level.snake.up",
-        "when": "editorTextFocus"
+        "when": "belowCLevel.snakeActive"
       },
       {
         "key": "down",
         "command": "below-c-level.snake.down",
-        "when": "editorTextFocus"
+        "when": "belowCLevel.snakeActive"
       },
       {
         "key": "left",
         "command": "below-c-level.snake.left",
-        "when": "editorTextFocus"
+        "when": "belowCLevel.snakeActive"
       },
       {
         "key": "right",
         "command": "below-c-level.snake.right",
-        "when": "editorTextFocus"
+        "when": "belowCLevel.snakeActive"
       }
     ],
     "configuration": {
@@ -115,6 +115,11 @@
           "type": "number",
           "default": 5000,
           "description": "Delay before auto name change in milliseconds"
+        },
+        "belowCLevel.autoFibonacci": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically apply Fibonacci indentation to Python files"
         }
       }
     }
