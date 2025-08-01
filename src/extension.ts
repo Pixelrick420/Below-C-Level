@@ -9,6 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
 	activateJoke(context);
 	activateNameChanger(context);
 	activateSnake(context);
+	addFibonacci(context);
 
 	const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
 		WebViewProvider.createOrShow(context.extensionUri);
