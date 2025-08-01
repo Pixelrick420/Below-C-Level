@@ -5,15 +5,15 @@ export function getJoke(context: vscode.ExtensionContext){
             // Display a message box to the user
             const Question:string[]=["Why do front end developers eat lunch alone"]
             const Ans:string[]=["Because they don't know how to join tables"]
-            context.subscriptions.push(disposable);
-            const index=Math.floor(Math.random()*3+1);
             
-            vscode.window.showInformationMessage(Question[index]).(selection => {
-      if (selection === 'Click Me') {
-        vscode.window.showInformationMessage('You clicked the button!');
-      }
-    });;
+            const index=Math.floor(Math.random()*+1);
+            console.log(index);
+            vscode.window.showInformationMessage(Question[index],'Reveal').then((selection:any) => {
+                if (selection === 'Reveal') {
+                    vscode.window.showInformationMessage(Ans[index]);
+                }
+                });
         });
     
-        
+        context.subscriptions.push(disposable);
 }
