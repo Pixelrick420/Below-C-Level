@@ -3,6 +3,7 @@
   "displayName": "below_c_level",
   "description": "The most useless VS Code extension ever created",
   "version": "0.0.1",
+  "publisher": "Theerttha",
   "engines": {
     "vscode": "^1.102.0"
   },
