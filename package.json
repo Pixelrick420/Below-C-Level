@@ -9,17 +9,60 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "below-c-level.getJoke",
-        "title": "Get Joke"
+        "title": "Below C Level: Get Joke"
       },
       {
         "command": "below-c-level.nameChanger",
-        "title": "Shake it"
+        "title": "Below C Level: Shake it"
+      },
+      {
+        "command": "below-c-level.snake",
+        "title": "Below C Level: Snake"
+      },
+      {
+        "command": "below-c-level.snake.up",
+        "title": "Snake Up"
+      },
+      {
+        "command": "below-c-level.snake.down",
+        "title": "Snake Down"
+      },
+      {
+        "command": "below-c-level.snake.left",
+        "title": "Snake Left"
+      },
+      {
+        "command": "below-c-level.snake.right",
+        "title": "Snake Right"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "up",
+        "command": "below-c-level.snake.up",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "down",
+        "command": "below-c-level.snake.down",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "left",
+        "command": "below-c-level.snake.left",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "right",
+        "command": "below-c-level.snake.right",
+        "when": "editorTextFocus"
       }
     ]
   },
