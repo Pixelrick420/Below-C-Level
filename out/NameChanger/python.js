@@ -37,24 +37,89 @@ function getIdentifiers(pythonCode) {
         'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning',
         'UserWarning', 'ValueError', 'Warning', 'ZeroDivisionError'
     ]);
-    // Simple regex-based approach to find identifiers
-    // This is not a full parser but should work for most cases
     // Remove comments and strings to avoid false positives
     let cleanedCode = removeCommentsAndStrings(pythonCode);
-    // Pattern to match Python identifiers
-    const identifierPattern = /\b[a-zA-Z_][a-zA-Z0-9_]*\b/g;
+    // Find user-defined functions first (functions defined in this file)
+    const userDefinedFunctions = findUserDefinedFunctions(cleanedCode);
+    // Find variables from assignments and other contexts
+    const variables = findVariables(cleanedCode);
+    // Find import aliases
+    const importAliases = findImportAliases(cleanedCode);
+    // Combine all identifiers
+    userDefinedFunctions.forEach(id => identifiers.add(id));
+    variables.forEach(id => identifiers.add(id));
+    importAliases.forEach(id => identifiers.add(id));
+    // Filter out builtins and likely library functions
+    const filteredIdentifiers = Array.from(identifiers).filter(identifier => {
+        return !builtins.has(identifier) && !isLikelyBuiltin(identifier);
+    });
+    return filteredIdentifiers;
+}
+function findUserDefinedFunctions(code) {
+    const functions = new Set();
+    // Match function definitions: def function_name(
+    const functionPattern = /^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
     let match;
-    while ((match = identifierPattern.exec(cleanedCode)) !== null) {
-        const identifier = match[0];
-        // Skip if it's a builtin or keyword
-        if (!builtins.has(identifier)) {
-            // Additional checks to filter out likely non-user-defined identifiers
-            if (!isLikelyBuiltin(identifier)) {
-                identifiers.add(identifier);
+    while ((match = functionPattern.exec(code)) !== null) {
+        functions.add(match[1]);
+    }
+    return functions;
+}
+function findVariables(code) {
+    const variables = new Set();
+    // Pattern for various assignment contexts
+    const patterns = [
+        // Simple assignment: x = 1
+        /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=/gm,
+        // Multiple assignment: x, y = 1, 2 or x, y, z = func()
+        /^\s*([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)+)\s*=/gm,
+        // For loop variables: for x in range(10):
+        /for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+/g,
+        // For loop with multiple variables: for x, y in pairs:
+        /for\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)+)\s+in\s+/g,
+        // With statement variables: with open('file') as f:
+        /with\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g,
+        // Class definitions: class MyClass:
+        /^\s*class\s+([a-zA-Z_][a-zA-Z0-9_]*)/gm,
+        // Exception handling: except Exception as e:
+        /except\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g
+    ];
+    patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(code)) !== null) {
+            const matched = match[1];
+            // Handle multiple variables (x, y, z)
+            if (matched.includes(',')) {
+                const vars = matched.split(',').map(v => v.trim());
+                vars.forEach(v => {
+                    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v)) {
+                        variables.add(v);
+                    }
+                });
+            }
+            else {
+                variables.add(matched);
             }
         }
+    });
+    return variables;
+}
+function findImportAliases(code) {
+    const aliases = new Set();
+    // Match import aliases: import module as alias
+    const importAsPattern = /import\s+[a-zA-Z_][a-zA-Z0-9_.]*\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
+    // Match from import aliases: from module import name as alias
+    const fromImportAsPattern = /from\s+[a-zA-Z_][a-zA-Z0-9_.]*\s+import\s+.+\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
+    let match;
+    // Find import aliases
+    while ((match = importAsPattern.exec(code)) !== null) {
+        aliases.add(match[1]);
     }
-    return Array.from(identifiers);
+    // Find from import aliases
+    while ((match = fromImportAsPattern.exec(code)) !== null) {
+        aliases.add(match[1]);
+    }
+    return aliases;
 }
 function removeCommentsAndStrings(code) {
     let result = '';
