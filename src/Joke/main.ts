@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { isNsfwJokesEnabled } from '../extension';
 
 let jokeInterval: NodeJS.Timeout | undefined;
 
@@ -35,7 +36,7 @@ function setupAutoJoke() {
 }
 
 function showRandomJoke() {
-    const Question: string[] = [
+    var Question: string[] = [
         "Why do front end developers eat lunch alone",
         "Why was the river rich?",
         "How do you generate a random string?",
@@ -82,7 +83,7 @@ function showRandomJoke() {
     const index = Math.floor(Math.random() * (length));
     console.log(index);
     const chance = Math.random();
-    if (chance < 0.5) {
+    if (chance < 1) {
         vscode.window.showInformationMessage(Question[index], 'Reveal').then((selection: any) => {
             if (selection === 'Reveal') {
                 vscode.window.showInformationMessage(Ans[index]);
@@ -90,7 +91,9 @@ function showRandomJoke() {
         });
     } else {
         vscode.window.showInformationMessage("Why is assembly language wet", 'Reveal').then((selection: any) => {
-            vscode.window.showInformationMessage("Because it is below c level");
+            if (selection === 'Reveal') {
+                vscode.window.showInformationMessage(Ans[index]);
+            }
         });
     }
 }
