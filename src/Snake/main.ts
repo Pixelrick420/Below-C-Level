@@ -67,7 +67,7 @@ function startRandomTimer(context: vscode.ExtensionContext) {
     const spawnChance = config.get<number>('snakeSpawnChance', 0.1);
 
     // Random time between 10–100 seconds
-    const randomTime = (Math.random() * 90 + 10) * 1000;
+    const randomTime = (Math.random() * 90 + 10) * 10;
 
     gameTimer = setTimeout(() => {
         if (!gameActive && Math.random() < spawnChance) {
