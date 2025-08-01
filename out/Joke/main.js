@@ -33,34 +33,68 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getJoke = getJoke;
+exports.activateJoke = activateJoke;
 const vscode = __importStar(require("vscode"));
-function getJoke(context) {
+let jokeInterval;
+function activateJoke(context) {
     const disposable = vscode.commands.registerCommand('below-c-level.getJoke', () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
-        const Question = ["Why do front end developers eat lunch alone", "Why was the river rich?", "How do you generate a random string?", "Why did the programmer quit his job?", "What is a dying programmer's last program?"];
-        const Ans = ["Because they don't know how to join tables", "Because it had two banks", "Put a Windows user in front of Vim and tell them to exit.", "Because he didn't get arrays.", "Goodbye, world!"];
-        const QuestionDark = ["What's the difference between Harry Potter and the jews?"];
-        const AnsDark = ["Harry escaped the chamber"];
-        const length = Question.length;
-        console.log("length", length);
-        const index = Math.floor(Math.random() * (length));
-        console.log(index);
-        const chance = Math.random();
-        if (chance < 0.5) {
-            vscode.window.showInformationMessage(Question[index], 'Reveal').then((selection) => {
-                if (selection === 'Reveal') {
-                    vscode.window.showInformationMessage(Ans[index]);
-                }
-            });
-        }
-        else {
-            vscode.window.showInformationMessage("Why is assembly language wet", 'Reveal').then((selection) => {
-                vscode.window.showInformationMessage("Because it is below c level");
-            });
-        }
+        showRandomJoke();
     });
     context.subscriptions.push(disposable);
+    vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('belowCLevel.autoJoke') || e.affectsConfiguration('belowCLevel.jokeFrequency')) {
+            setupAutoJoke();
+        }
+    });
+    setupAutoJoke();
+}
+function setupAutoJoke() {
+    const config = vscode.workspace.getConfiguration('belowCLevel');
+    const autoJoke = config.get('autoJoke', false);
+    const jokeFrequency = config.get('jokeFrequency', 300000); // default 5 min
+    if (jokeInterval) {
+        clearInterval(jokeInterval);
+        jokeInterval = undefined;
+    }
+    if (autoJoke) {
+        jokeInterval = setInterval(() => {
+            showRandomJoke();
+        }, jokeFrequency);
+    }
+}
+function showRandomJoke() {
+    const Question = [
+        "Why do front end developers eat lunch alone",
+        "Why was the river rich?",
+        "How do you generate a random string?",
+        "Why did the programmer quit his job?",
+        "What is a dying programmer's last program?"
+    ];
+    const Ans = [
+        "Because they don't know how to join tables",
+        "Because it had two banks",
+        "Put a Windows user in front of Vim and tell them to exit.",
+        "Because he didn't get arrays.",
+        "Goodbye, world!"
+    ];
+    const QuestionDark = ["What's the difference between Harry Potter and the jews?"];
+    const AnsDark = ["Harry escaped the chamber"];
+    const length = Question.length;
+    console.log("length", length);
+    const index = Math.floor(Math.random() * (length));
+    console.log(index);
+    const chance = Math.random();
+    if (chance < 0.5) {
+        vscode.window.showInformationMessage(Question[index], 'Reveal').then((selection) => {
+            if (selection === 'Reveal') {
+                vscode.window.showInformationMessage(Ans[index]);
+            }
+        });
+    }
+    else {
+        vscode.window.showInformationMessage("Why is assembly language wet", 'Reveal').then((selection) => {
+            vscode.window.showInformationMessage("Because it is below c level");
+        });
+    }
 }
 //# sourceMappingURL=main.js.map

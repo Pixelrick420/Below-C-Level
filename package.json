@@ -1,7 +1,7 @@
 {
   "name": "below-c-level",
   "displayName": "below_c_level",
-  "description": "",
+  "description": "The most useless VS Code extension ever created",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.102.0"
@@ -9,8 +9,7 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -41,6 +40,14 @@
       {
         "command": "below-c-level.snake.right",
         "title": "Snake Right"
+      },
+      {
+        "command": "below-c-level.openDashboard",
+        "title": "Below C Level: Open Dashboard"
+      },
+      {
+        "command": "below-c-level.openSettings",
+        "title": "Below C Level: Open Settings"
       }
     ],
     "keybindings": [
@@ -64,7 +71,44 @@
         "command": "below-c-level.snake.right",
         "when": "editorTextFocus"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Below C Level",
+      "properties": {
+        "belowCLevel.autoNameChange": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically replace identifiers with Shakespearean insults"
+        },
+        "belowCLevel.autoSnake": {
+          "type": "boolean",
+          "default": false,
+          "description": "Randomly spawn code-eating snake"
+        },
+        "belowCLevel.autoJoke": {
+          "type": "boolean",
+          "default": false,
+          "description": "Randomly tell stupid tech jokes"
+        },
+        "belowCLevel.snakeSpawnChance": {
+          "type": "number",
+          "default": 0.1,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Chance of snake spawning (0-1)"
+        },
+        "belowCLevel.jokeFrequency": {
+          "type": "number",
+          "default": 300000,
+          "description": "Joke frequency in milliseconds"
+        },
+        "belowCLevel.nameChangeDelay": {
+          "type": "number",
+          "default": 5000,
+          "description": "Delay before auto name change in milliseconds"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

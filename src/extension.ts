@@ -1,17 +1,31 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { getJoke } from './Joke/main';
-import { nameChanger } from './NameChanger/main';
-import { snakeGame } from './Snake/main';
+import { activateJoke } from './Joke/main';
+import { activateNameChanger } from './NameChanger/main';
+import { activateSnake } from './Snake/main';
+import { WebViewProvider } from './WebViewProvider';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	getJoke(context);
-	nameChanger(context);
-	snakeGame(context);
+	activateJoke(context);
+	activateNameChanger(context);
+	activateSnake(context);
+
+	const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
+		WebViewProvider.createOrShow(context.extensionUri);
+	});
+	const openSettingsCommand = vscode.commands.registerCommand('below-c-level.openSettings', () => {
+		WebViewProvider.createOrShow(context.extensionUri);
+	});
+
+	context.subscriptions.push(openPanelCommand, openSettingsCommand);
+
+	vscode.commands.executeCommand('below-c-level.openDashboard');
+
+	const configChangeListener = vscode.workspace.onDidChangeConfiguration(event => {
+		if (event.affectsConfiguration('belowCLevel')) {
+			vscode.window.showInformationMessage('Below C Level settings updated!');
+		}
+	});
+	context.subscriptions.push(configChangeListener);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}

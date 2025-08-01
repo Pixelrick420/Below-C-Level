@@ -33,16 +33,38 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.nameChanger = nameChanger;
+exports.activateNameChanger = activateNameChanger;
 const vscode = __importStar(require("vscode"));
 const python_1 = require("./python");
 const c_1 = require("./c");
-function nameChanger(context) {
-    // Register the NameChanger command
-    let nameChangerDisposable = vscode.commands.registerCommand('below-c-level.nameChanger', () => {
+let nameChangeInterval;
+function activateNameChanger(context) {
+    const disposable = vscode.commands.registerCommand('below-c-level.nameChanger', () => {
         runNameChanger();
     });
-    context.subscriptions.push(nameChangerDisposable);
+    context.subscriptions.push(disposable);
+    vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('belowCLevel.autoNameChange') || e.affectsConfiguration('belowCLevel.nameChangeDelay')) {
+            setupAutoNameChanger();
+        }
+    });
+    setupAutoNameChanger();
+}
+function setupAutoNameChanger() {
+    const config = vscode.workspace.getConfiguration('belowCLevel');
+    const autoNameChange = config.get('autoNameChange', false);
+    const nameChangeDelay = config.get('nameChangeDelay', 5000);
+    if (nameChangeInterval) {
+        clearInterval(nameChangeInterval);
+        nameChangeInterval = undefined;
+    }
+    if (autoNameChange) {
+        nameChangeInterval = setInterval(() => {
+            if (vscode.window.activeTextEditor) {
+                vscode.commands.executeCommand('below-c-level.nameChanger');
+            }
+        }, nameChangeDelay);
+    }
 }
 function runNameChanger() {
     const editor = vscode.window.activeTextEditor;
@@ -64,10 +86,6 @@ function runNameChanger() {
         case 'c':
             handleCFile(editor);
             break;
-        // TODO: Add other file types as needed
-        // case 'js':
-        //     handleJavaScriptFile(editor);
-        //     break;
         default:
             vscode.window.showErrorMessage(`File type .${fileExtension} is not supported yet!`);
     }
@@ -76,10 +94,8 @@ async function handlePythonFile(editor) {
     const document = editor.document;
     const text = document.getText();
     try {
-        // Get user-defined identifiers from the Python file
         const identifiers = (0, python_1.getIdentifiers)(text);
         if (identifiers.length === 0) {
-            vscode.window.showInformationMessage('No user-defined identifiers found to insult!');
             return;
         }
         await processIdentifiers(editor, identifiers, text);
@@ -92,10 +108,8 @@ async function handleCFile(editor) {
     const document = editor.document;
     const text = document.getText();
     try {
-        // Get user-defined identifiers from the C file
         const identifiers = (0, c_1.getIdentifiers)(text);
         if (identifiers.length === 0) {
-            vscode.window.showInformationMessage('No user-defined identifiers found to insult!');
             return;
         }
         await processIdentifiers(editor, identifiers, text);
@@ -106,30 +120,24 @@ async function handleCFile(editor) {
 }
 async function processIdentifiers(editor, identifiers, text) {
     const document = editor.document;
-    // Create mapping of original identifiers to Shakespearean insults
     const identifierMap = new Map();
     const usedInsults = new Set();
     for (const identifier of identifiers) {
         let insult = getShakespearianInsult();
-        // Ensure we don't use the same insult twice
         while (usedInsults.has(insult)) {
             insult = getShakespearianInsult();
         }
         usedInsults.add(insult);
         identifierMap.set(identifier, insult);
     }
-    // Replace identifiers in the text, but preserve strings and comments
     let newText = replaceIdentifiersPreservingStrings(text, identifierMap);
-    // Apply the changes to the editor
     const fullRange = new vscode.Range(document.positionAt(0), document.positionAt(text.length));
     await editor.edit(editBuilder => {
         editBuilder.replace(fullRange, newText);
     });
-    // Show success message with the mapping
     const mappingString = Array.from(identifierMap.entries())
         .map(([orig, insult]) => `${orig} → ${insult}`)
         .join(', ');
-    vscode.window.showInformationMessage(`Successfully insulted ${identifiers.length} identifier(s)! ${mappingString}`);
 }
 function getShakespearianInsult() {
     const adjectives1 = [
@@ -176,12 +184,10 @@ function replaceIdentifiersPreservingStrings(code, identifierMap) {
     let i = 0;
     while (i < code.length) {
         const char = code[i];
-        // Handle triple-quoted strings - preserve them completely
         if ((char === '"' || char === "'") && code.substr(i, 3) === char.repeat(3)) {
             const quote = char.repeat(3);
             const stringStart = i;
             i += 3;
-            // Find the end of the triple-quoted string
             while (i < code.length - 2) {
                 if (code.substr(i, 3) === quote) {
                     i += 3;
@@ -189,52 +195,43 @@ function replaceIdentifiersPreservingStrings(code, identifierMap) {
                 }
                 i++;
             }
-            // Add the entire string as-is
             result += code.substring(stringStart, i);
             continue;
         }
-        // Handle regular strings - preserve them completely
         if (char === '"' || char === "'") {
             const quote = char;
             const stringStart = i;
             i++;
             while (i < code.length && code[i] !== quote) {
                 if (code[i] === '\\') {
-                    i += 2; // Skip escaped character
+                    i += 2;
                 }
                 else {
                     i++;
                 }
             }
             if (i < code.length)
-                i++; // Skip closing quote
-            // Add the entire string as-is
+                i++;
             result += code.substring(stringStart, i);
             continue;
         }
-        // Handle comments - preserve them completely
         if (char === '#') {
             const commentStart = i;
-            // Skip until end of line
             while (i < code.length && code[i] !== '\n') {
                 i++;
             }
             if (i < code.length) {
-                i++; // Include the newline
+                i++;
             }
-            // Add the entire comment as-is
             result += code.substring(commentStart, i);
             continue;
         }
-        // Check if we're at the start of an identifier
         if (/[a-zA-Z_]/.test(char)) {
             const identifierStart = i;
-            // Extract the full identifier
             while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
                 i++;
             }
             const identifier = code.substring(identifierStart, i);
-            // Replace if it's in our map
             if (identifierMap.has(identifier)) {
                 result += identifierMap.get(identifier);
             }
@@ -243,13 +240,9 @@ function replaceIdentifiersPreservingStrings(code, identifierMap) {
             }
             continue;
         }
-        // Regular character - just add it
         result += char;
         i++;
     }
     return result;
-}
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 //# sourceMappingURL=main.js.map
