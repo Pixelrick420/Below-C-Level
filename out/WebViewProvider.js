@@ -339,9 +339,7 @@ class WebViewProvider {
                                min="1000" max="60000" step="1000">
                     </div>
                 </div>
-                <div class="actions">
-                    <button class="btn" onclick="runCommand('below-c-level.nameChanger')">Run now</button>
-                </div>
+
             </div>
 
             <div class="feature">
@@ -371,9 +369,6 @@ class WebViewProvider {
                             <span class="slider-value">${Math.round(settings.snakeSpawnChance * 100)}%</span>
                         </div>
                     </div>
-                </div>
-                <div class="actions">
-                    <button class="btn" onclick="runCommand('below-c-level.snake')">Spawn snake</button>
                 </div>
             </div>
 

@@ -40,12 +40,12 @@ const main_1 = require("./Joke/main");
 const main_2 = require("./NameChanger/main");
 const main_3 = require("./Snake/main");
 const WebViewProvider_1 = require("./WebViewProvider");
-const main_4 = require("./CommentGenerator/main");
+const main_4 = require("./Fibonacci/main");
 function activate(context) {
     (0, main_1.activateJoke)(context);
     (0, main_2.activateNameChanger)(context);
     (0, main_3.activateSnake)(context);
-    (0, main_4.commentGenerator)(context);
+    (0, main_4.addFibonacci)(context);
     const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
         WebViewProvider_1.WebViewProvider.createOrShow(context.extensionUri);
     });
@@ -53,7 +53,6 @@ function activate(context) {
         WebViewProvider_1.WebViewProvider.createOrShow(context.extensionUri);
     });
     context.subscriptions.push(openPanelCommand, openSettingsCommand);
-    vscode.commands.executeCommand('below-c-level.openDashboard');
     const configChangeListener = vscode.workspace.onDidChangeConfiguration(event => {
         if (event.affectsConfiguration('belowCLevel')) {
             vscode.window.showInformationMessage('Below C Level settings updated!');
