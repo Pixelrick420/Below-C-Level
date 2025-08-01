@@ -7,6 +7,7 @@ interface Position {
 
 let gameTimer: NodeJS.Timeout | undefined;
 let gameActive = false;
+let currentDirection: Position = { line: 0, character: 1 };
 
 export function activateSnake(context: vscode.ExtensionContext) {
     // Register manual command
@@ -14,6 +15,22 @@ export function activateSnake(context: vscode.ExtensionContext) {
         startSnake(context);
     });
     context.subscriptions.push(disposable);
+
+    // Register arrow key commands once when extension activates
+    const up = vscode.commands.registerCommand('below-c-level.snake.up', () => {
+        if (gameActive && currentDirection.line !== 1) currentDirection = { line: -1, character: 0 };
+    });
+    const down = vscode.commands.registerCommand('below-c-level.snake.down', () => {
+        if (gameActive && currentDirection.line !== -1) currentDirection = { line: 1, character: 0 };
+    });
+    const left = vscode.commands.registerCommand('below-c-level.snake.left', () => {
+        if (gameActive && currentDirection.character !== 1) currentDirection = { line: 0, character: -1 };
+    });
+    const right = vscode.commands.registerCommand('below-c-level.snake.right', () => {
+        if (gameActive && currentDirection.character !== -1) currentDirection = { line: 0, character: 1 };
+    });
+
+    context.subscriptions.push(up, down, left, right);
 
     // React to configuration changes
     vscode.workspace.onDidChangeConfiguration(e => {
@@ -87,25 +104,9 @@ function startSnake(context: vscode.ExtensionContext) {
 
     let snake: Position[] = [{ line: middleLine, character: middleChar }];
     let apple: Position = randomApple();
-    let direction: Position = { line: 0, character: 1 };
+    currentDirection = { line: 0, character: 1 };
     let interval: NodeJS.Timeout | undefined;
     let commandDisposables: vscode.Disposable[] = [];
-
-    const up = vscode.commands.registerCommand('below-c-level.snake.up', () => {
-        if (gameActive && direction.line !== 1) direction = { line: -1, character: 0 };
-    });
-    const down = vscode.commands.registerCommand('below-c-level.snake.down', () => {
-        if (gameActive && direction.line !== -1) direction = { line: 1, character: 0 };
-    });
-    const left = vscode.commands.registerCommand('below-c-level.snake.left', () => {
-        if (gameActive && direction.character !== 1) direction = { line: 0, character: -1 };
-    });
-    const right = vscode.commands.registerCommand('below-c-level.snake.right', () => {
-        if (gameActive && direction.character !== -1) direction = { line: 0, character: 1 };
-    });
-
-    commandDisposables.push(up, down, left, right);
-    context.subscriptions.push(...commandDisposables);
 
     function randomApple(): Position {
         const vis = safeEditor.visibleRanges[0];
@@ -162,8 +163,8 @@ function startSnake(context: vscode.ExtensionContext) {
 
         const head = snake[0];
         const newHead: Position = {
-            line: head.line + direction.line,
-            character: head.character + direction.character,
+            line: head.line + currentDirection.line,
+            character: head.character + currentDirection.character,
         };
 
         if (newHead.line < 0 || newHead.line >= totalLines) {

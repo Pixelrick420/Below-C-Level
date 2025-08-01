@@ -37,15 +37,21 @@ exports.AddCommentsManager = void 0;
 exports.commentGenerator = commentGenerator;
 const vscode = __importStar(require("vscode"));
 const python_1 = require("./python");
+const c_1 = require("./c");
 class AddCommentsManager {
     pythonGenerator;
+    cGenerator;
     constructor() {
         this.pythonGenerator = new python_1.PythonCommentGenerator();
+        this.cGenerator = new c_1.CCommentGenerator();
     }
     async addComments(editor) {
         const document = editor.document;
         if (document.languageId === 'python') {
             await this.pythonGenerator.addCommentsSequentially(editor);
+        }
+        else if (document.languageId === 'c') {
+            await this.cGenerator.addCommentsSequentially(editor);
         }
         else {
             throw new Error(`Unsupported language: ${document.languageId}`);
@@ -57,15 +63,15 @@ function commentGenerator(context) {
     console.log('Below C Level extension is now active!');
     const addCommentsManager = new AddCommentsManager();
     // Register the command for adding philosophical comments
-    let disposable = vscode.commands.registerCommand('below-c-level.generateComment', async () => {
+    let disposable = vscode.commands.registerCommand('below-c-level.generateComments', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             vscode.window.showErrorMessage('No active editor found!');
             return;
         }
         const document = editor.document;
-        if (document.languageId !== 'python') {
-            vscode.window.showErrorMessage('This command only works with Python files!');
+        if (document.languageId !== 'python' && document.languageId !== 'c') {
+            vscode.window.showErrorMessage('This command only works with Python and C files!');
             return;
         }
         vscode.window.showInformationMessage('Adding philosophical chaos to your code...');

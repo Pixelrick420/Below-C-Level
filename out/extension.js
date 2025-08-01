@@ -40,10 +40,12 @@ const main_1 = require("./Joke/main");
 const main_2 = require("./NameChanger/main");
 const main_3 = require("./Snake/main");
 const WebViewProvider_1 = require("./WebViewProvider");
+const main_4 = require("./CommentGenerator/main");
 function activate(context) {
     (0, main_1.activateJoke)(context);
     (0, main_2.activateNameChanger)(context);
     (0, main_3.activateSnake)(context);
+    (0, main_4.commentGenerator)(context);
     const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
         WebViewProvider_1.WebViewProvider.createOrShow(context.extensionUri);
     });

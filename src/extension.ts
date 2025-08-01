@@ -3,12 +3,12 @@ import { activateJoke } from './Joke/main';
 import { activateNameChanger } from './NameChanger/main';
 import { activateSnake } from './Snake/main';
 import { WebViewProvider } from './WebViewProvider';
-
+import { commentGenerator } from './CommentGenerator/main';
 export function activate(context: vscode.ExtensionContext) {
 	activateJoke(context);
 	activateNameChanger(context);
 	activateSnake(context);
-
+	commentGenerator(context);
 	const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
 		WebViewProvider.createOrShow(context.extensionUri);
 	});

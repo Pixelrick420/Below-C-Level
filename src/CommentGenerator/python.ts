@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: __dirname + '/../../.env' });
 
 interface GroqResponse {
     choices: Array<{
@@ -9,30 +11,28 @@ interface GroqResponse {
 }
 
 export class PythonCommentGenerator {
-    // TODO: Replace this with your actual Groq API key
     private readonly API_KEY = process.env.API_KEY;
 
     private async callGroqAPI(conversationContext: string = ""): Promise<string> {
         const prompt = `Generate a conversation between Aristotle and Plato as Python comments. The conversation should:
-1. Start with a serious philosophical discussion about the nature of reality
-2. Gradually devolve into increasingly absurd and pointless arguments
-3. Include completely ridiculous tangents about mundane things
-4. Never reach any conclusion and keep going in circles
-5. Be formatted as Python comments (# at the start of each line)
-6. Be around 10-15 lines long
-7. Each philosopher should speak 2-3 times
+        1. Start with a serious philosophical discussion about the nature of reality
+        2. Gradually devolve into increasingly absurd and pointless arguments
+        3. Include completely ridiculous tangents about mundane things
+        4. Never reach any conclusion and keep going in circles
+        5. Be formatted as Python comments (# at the start of each line)
+        6. Be around 10-15 lines long
+        7. Each philosopher should speak 2-3 times
 
-${conversationContext ? `Continue this conversation context: ${conversationContext}` : "Start a new philosophical conversation that will inevitably become pointless."}
+        ${conversationContext ? `Continue this conversation context: ${conversationContext}` : "Start a new philosophical conversation that will inevitably become pointless."}
 
-Make it hilariously stupid while maintaining their "philosophical" speaking style.`;
+        Make it hilariously stupid while maintaining their "philosophical" speaking style.`;
 
-        const response:any= await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
+            const headers = {
                 'Authorization': `Bearer ${this.API_KEY}`,
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+            };
+
+            const body = JSON.stringify({
                 model: 'llama3-8b-8192',
                 messages: [
                     {
@@ -46,17 +46,40 @@ Make it hilariously stupid while maintaining their "philosophical" speaking styl
                 ],
                 max_tokens: 500,
                 temperature: 0.9
-            })
-        });
+            });
 
-        if (!response.ok) {
-            throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
+            // Print debug info
+            console.log('=== Debug: callGroqAPI ===');
+            console.log('API Key:', this.API_KEY ? '[REDACTED]' : 'MISSING!');
+            console.log('Headers:', headers);
+            console.log('Request Body:', body);
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers,
+                    body
+                });
+
+                console.log('Response Status:', response.status, response.statusText);
+
+                const text = await response.text();  // log raw response first
+                console.log('Raw Response Body:', text);
+
+                if (!response.ok) {
+                    throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
+                }
+
+                const data: GroqResponse = JSON.parse(text);
+                console.log('Parsed Response Data:', data);
+
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('callGroqAPI failed:', error);
+                throw error;
+            }
         }
 
-        const data: GroqResponse = await response.json();
-        console.log("response",response,data);
-        return data.choices[0].message.content;
-    }
 
     private getRandomConversationContext(): string {
         console.log("inside random conversation");
@@ -88,124 +111,98 @@ Make it hilariously stupid while maintaining their "philosophical" speaking styl
         const shuffled = lines.sort(() => 0.5 - Math.random());
         return shuffled.slice(0, Math.min(count, shuffled.length));
     }
-    /*
-    async addPhilosophicalComments(editor: vscode.TextEditor): Promise<void> {
-        const document = editor.document;
-        const insertionPoints = this.findRandomInsertionPoints(document, 3); // Add 3 conversations
 
-        if (insertionPoints.length === 0) {
-            throw new Error('No suitable insertion points found in the Python file!');
+    private getFallbackCommentLines(): string[] {
+        const fallbackConversations = [
+            '# Aristotle: "The essence of code is in its execution, not its beauty."',
+            '# Plato: "But what of the perfect Form of an algorithm?"',
+            '# Aristotle: "Forms? I\'m more concerned about why my WiFi keeps disconnecting."',
+            '# Plato: "Your WiFi exists in the material world, thus it\'s imperfect!"',
+            '# Aristotle: "So you\'re saying perfect WiFi exists in some ideal realm?"',
+            '# Plato: "Obviously! Along with perfect pizza and comfortable chairs."',
+            '# Aristotle: "This is why nobody invites us to parties anymore."',
+            '# Plato: "Consider the allegory of the cave, but with programmers."',
+            '# Aristotle: "Are you saying we\'re chained to our monitors?"',
+            '# Plato: "Precisely! And Stack Overflow is the sun!"',
+            '# Aristotle: "That\'s... actually not a terrible metaphor."',
+            '# Plato: "Wait, did we just agree on something useful?"',
+            '# Aristotle: "Quick! Say something pointless before people notice!"',
+            '# Plato: "Um... do you think rubber ducks have feelings?"',
+            '# Aristotle: "There we go. Crisis averted."',
+            '# Aristotle: "Logic dictates that this function should work."',
+            '# Plato: "But does \'working\' exist independently of our perception?"',
+            '# Aristotle: "Plato, the code either runs or it doesn\'t."',
+            '# Plato: "But what if it runs in another dimension?"',
+            '# Aristotle: "That\'s... that\'s called a different server."',
+            '# Plato: "Is a server not just a cave casting shadows of data?"',
+            '# Aristotle: "I need coffee. Do you want coffee?"',
+            '# Plato: "Is coffee the Form of awakeness, or just bean water?"',
+            '# Aristotle: "I\'m getting decaf. For both of us."'
+        ];
+        return fallbackConversations;
+    }
+
+    public async addCommentsSequentially(editor: vscode.TextEditor): Promise<void> {
+        const document = editor.document;
+        const codeLines = [];
+        
+        // Find all non-empty, non-comment lines
+        for (let i = 0; i < document.lineCount; i++) {
+            const line = document.lineAt(i);
+            if (line.text.trim() && !line.text.trim().startsWith('#')) {
+                codeLines.push(i);
+            }
         }
 
-        await editor.edit(editBuilder => {
-            // Sort insertion points in reverse order to maintain line numbers
-            insertionPoints.sort((a, b) => b - a);
+        if (codeLines.length === 0) {
+            throw new Error('No suitable code lines found in the Python file!');
+        }
 
-            insertionPoints.forEach(async (lineNumber, index) => {
-                try {
-                    const context = index === 0 ? "" : this.getRandomConversationContext();
-                    const conversation = await this.callGroqAPI(apiKey, context);
-                    
-                    // Add some spacing and the conversation
-                    const commentBlock = `\n# ===================== PHILOSOPHICAL INTERLUDE =====================\n${conversation}\n# ================================================================\n\n`;
-                    
-                    const position = new vscode.Position(lineNumber, 0);
-                    editBuilder.insert(position, commentBlock);
-                } catch (error) {
-                    console.error(`Failed to generate conversation for line ${lineNumber}:`, error);
-                    // Fallback to a static absurd conversation
-                    const fallbackConversation = `# ===================== PHILOSOPHICAL INTERLUDE =====================
-# Aristotle: "The nature of being is fundamentally about actualized potential..."
-# Plato: "But surely the Forms represent true reality beyond mere appearances?"
-# Aristotle: "Wait, are we talking about reality or about why my sandwich tastes weird?"
-# Plato: "Your sandwich? I was discussing the eternal nature of Truth!"
-# Aristotle: "Yeah but like, do you think mayonnaise is a social construct?"
-# Plato: "...what even is mayonnaise in the realm of pure Ideas?"
-# Aristotle: "Exactly! That's what I'm saying! Also, is a hot dog a sandwich?"
-# Plato: "This conversation has achieved perfect meaninglessness."
-# Aristotle: "Finally, we agree on something!"
-# ================================================================`;
-                    
-                    const position = new vscode.Position(lineNumber, 0);
-                    editBuilder.insert(position, fallbackConversation + '\n\n');
-                }
-            });
-        });
+        let conversationLines: string[] = [];
+        let conversationIndex = 0;
 
-        // Since we can't await inside editBuilder, we need to make separate API calls
-        // Let's do it properly with a different approach
-        await this.addCommentsSequentially(editor, insertionPoints);
-    }
-        */
-    public async addCommentsSequentially(editor: vscode.TextEditor): Promise<void> {
-        var insertionPoints:number[]=[5]
-        // Sort in reverse order to maintain line numbers
-        insertionPoints.sort((a:number, b:number) => b - a);
-        //console.log("add comments sequentially");
+        // Generate conversation lines (either from API or fallback)
+        try {
+            const context = this.getRandomConversationContext();
+            const conversation = await this.callGroqAPI(context);
+            conversationLines = conversation.split('\n').filter(line => line.trim());
+        } catch (error) {
+            console.error('Failed to generate conversation from API, using fallback:', error);
+            conversationLines = this.getFallbackCommentLines();
+        }
+
+        // Calculate maximum number of debate lines based on code lines
+        const maxDebateLines = Math.floor(codeLines.length / 2.5);
         
-        for (let i = 0; i < insertionPoints.length; i++) {
-            const lineNumber = insertionPoints[i];
-            
-            try {
-                const context = i === 0 ? "" : this.getRandomConversationContext();
-                console.log("random conversation context");
-                const conversation = await this.callGroqAPI(context);
-                
-                await editor.edit(editBuilder => {
-                    const commentBlock = `\n# ===================== PHILOSOPHICAL INTERLUDE api =====================\n${conversation}\n# ================================================================\n\n`;
-                    const position = new vscode.Position(lineNumber, 0);
-                    editBuilder.insert(position, commentBlock);
-                });
-                
-                // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-            } catch (error) {
-                console.error(`Failed to generate conversation for line ${lineNumber}:`, error);
-                
-                // Fallback conversation
-                const fallbackConversations = [
-                    `
-# Aristotle: "The essence of code is in its execution, not its beauty."
-# Plato: "But what of the perfect Form of an algorithm?"
-# Aristotle: "Forms? I'm more concerned about why my WiFi keeps disconnecting."
-# Plato: "Your WiFi exists in the material world, thus it's imperfect!"
-# Aristotle: "So you're saying perfect WiFi exists in some ideal realm?"
-# Plato: "Obviously! Along with perfect pizza and comfortable chairs."
-# Aristotle: "This is why nobody invites us to parties anymore."
-# ================================================================`,
-
-                    `
-# Plato: "Consider the allegory of the cave, but with programmers."
-# Aristotle: "Are you saying we're chained to our monitors?"
-# Plato: "Precisely! And Stack Overflow is the sun!"
-# Aristotle: "That's... actually not a terrible metaphor."
-# Plato: "Wait, did we just agree on something useful?"
-# Aristotle: "Quick! Say something pointless before people notice!"
-# Plato: "Um... do you think rubber ducks have feelings?"
-# Aristotle: "There we go. Crisis averted."
-# ================================================================`,
-
-                    `
-# Aristotle: "Logic dictates that this function should work."
-# Plato: "But does 'working' exist independently of our perception?"
-# Aristotle: "Plato, the code either runs or it doesn't."
-# Plato: "But what if it runs in another dimension?"
-# Aristotle: "That's... that's called a different server."
-# Plato: "Is a server not just a cave casting shadows of data?"
-# Aristotle: "I need coffee. Do you want coffee?"
-# Plato: "Is coffee the Form of awakeness, or just bean water?"
-# Aristotle: "I'm getting decaf. For both of us."
-# ================================================================`
-                ];
-                
-                const fallback = fallbackConversations[i % fallbackConversations.length];
-                
-                await editor.edit(editBuilder => {
-                    const position = new vscode.Position(lineNumber, 0);
-                    editBuilder.insert(position, fallback + '\n\n');
-                });
+        // Insert comments after every 3-4 lines of code, but limit total debate lines
+        const insertions: Array<{line: number, comment: string}> = [];
+        
+        for (let i = 0; i < codeLines.length && insertions.length < maxDebateLines; i++) {
+            // Insert a comment after every 3-4 lines of code
+            if (i > 0 && (i % 3 === 0 || i % 4 === 0)) {
+                if (conversationIndex < conversationLines.length) {
+                    const lineToInsertAfter = codeLines[i - 1];
+                    insertions.push({
+                        line: lineToInsertAfter + 1,
+                        comment: conversationLines[conversationIndex]
+                    });
+                    conversationIndex++;
+                }
             }
+        }
+
+        // Sort insertions in reverse order to maintain line numbers
+        insertions.sort((a, b) => b.line - a.line);
+
+        // Insert comments one by one
+        for (const insertion of insertions) {
+            await editor.edit(editBuilder => {
+                const position = new vscode.Position(insertion.line, 0);
+                editBuilder.insert(position, insertion.comment + '\n');
+            });
+            
+            // Small delay to avoid issues
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
     }
 }

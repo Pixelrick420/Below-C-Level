@@ -37,12 +37,31 @@ exports.activateSnake = activateSnake;
 const vscode = __importStar(require("vscode"));
 let gameTimer;
 let gameActive = false;
+let currentDirection = { line: 0, character: 1 };
 function activateSnake(context) {
     // Register manual command
     const disposable = vscode.commands.registerCommand('below-c-level.snake', () => {
         startSnake(context);
     });
     context.subscriptions.push(disposable);
+    // Register arrow key commands once when extension activates
+    const up = vscode.commands.registerCommand('below-c-level.snake.up', () => {
+        if (gameActive && currentDirection.line !== 1)
+            currentDirection = { line: -1, character: 0 };
+    });
+    const down = vscode.commands.registerCommand('below-c-level.snake.down', () => {
+        if (gameActive && currentDirection.line !== -1)
+            currentDirection = { line: 1, character: 0 };
+    });
+    const left = vscode.commands.registerCommand('below-c-level.snake.left', () => {
+        if (gameActive && currentDirection.character !== 1)
+            currentDirection = { line: 0, character: -1 };
+    });
+    const right = vscode.commands.registerCommand('below-c-level.snake.right', () => {
+        if (gameActive && currentDirection.character !== -1)
+            currentDirection = { line: 0, character: 1 };
+    });
+    context.subscriptions.push(up, down, left, right);
     // React to configuration changes
     vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration('belowCLevel.autoSnake') || e.affectsConfiguration('belowCLevel.snakeSpawnChance')) {
@@ -101,27 +120,9 @@ function startSnake(context) {
     const middleChar = Math.max(0, Math.floor(lineText.length / 2));
     let snake = [{ line: middleLine, character: middleChar }];
     let apple = randomApple();
-    let direction = { line: 0, character: 1 };
+    currentDirection = { line: 0, character: 1 };
     let interval;
     let commandDisposables = [];
-    const up = vscode.commands.registerCommand('below-c-level.snake.up', () => {
-        if (gameActive && direction.line !== 1)
-            direction = { line: -1, character: 0 };
-    });
-    const down = vscode.commands.registerCommand('below-c-level.snake.down', () => {
-        if (gameActive && direction.line !== -1)
-            direction = { line: 1, character: 0 };
-    });
-    const left = vscode.commands.registerCommand('below-c-level.snake.left', () => {
-        if (gameActive && direction.character !== 1)
-            direction = { line: 0, character: -1 };
-    });
-    const right = vscode.commands.registerCommand('below-c-level.snake.right', () => {
-        if (gameActive && direction.character !== -1)
-            direction = { line: 0, character: 1 };
-    });
-    commandDisposables.push(up, down, left, right);
-    context.subscriptions.push(...commandDisposables);
     function randomApple() {
         const vis = safeEditor.visibleRanges[0];
         const minLine = vis.start.line;
@@ -172,8 +173,8 @@ function startSnake(context) {
             return;
         const head = snake[0];
         const newHead = {
-            line: head.line + direction.line,
-            character: head.character + direction.character,
+            line: head.line + currentDirection.line,
+            character: head.character + currentDirection.character,
         };
         if (newHead.line < 0 || newHead.line >= totalLines) {
             gameOver();
