@@ -4,7 +4,7 @@ import { getIdentifiers as getCIdentifiers } from './c';
 
 export function nameChanger(context: vscode.ExtensionContext) {
     // Register the NameChanger command
-    let nameChangerDisposable = vscode.commands.registerCommand('below_c_level.nameChanger', () => {
+    let nameChangerDisposable = vscode.commands.registerCommand('below-c-level.nameChanger', () => {
         runNameChanger();
     });
 

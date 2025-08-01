@@ -39,7 +39,7 @@ const python_1 = require("./python");
 const c_1 = require("./c");
 function nameChanger(context) {
     // Register the NameChanger command
-    let nameChangerDisposable = vscode.commands.registerCommand('below_c_level.nameChanger', () => {
+    let nameChangerDisposable = vscode.commands.registerCommand('below-c-level.nameChanger', () => {
         runNameChanger();
     });
     context.subscriptions.push(nameChangerDisposable);
