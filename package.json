@@ -51,7 +51,7 @@
       },
       {
         "command": "below-c-level.generateComments",
-        "title": "Get comments"
+        "title": "Below C Level: Get comments"
       },
       {
         "command": "below-c-level.fibonacci",
@@ -65,13 +65,13 @@
         "when": "below-c-level.snakeActive"
       },
       {
-        "key": "down", 
+        "key": "down",
         "command": "below-c-level.snake.down",
         "when": "below-c-level.snakeActive"
       },
       {
         "key": "left",
-        "command": "below-c-level.snake.left", 
+        "command": "below-c-level.snake.left",
         "when": "below-c-level.snakeActive"
       },
       {

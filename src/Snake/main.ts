@@ -64,10 +64,16 @@ function startRandomTimer(context: vscode.ExtensionContext) {
     }
 
     const config = vscode.workspace.getConfiguration('belowCLevel');
-    const spawnChance = config.get<number>('snakeSpawnChance', 0.1);
+    const autoSnake = config.get<boolean>('autoSnake', false);
+    let spawnChance = config.get<number>('snakeSpawnChance', 0.1);
+
+    // --- FIX: manual mode should always disable spawn ---
+    if (!autoSnake) {
+        spawnChance = 0;
+    }
 
     // Random time between 10–100 seconds
-    const randomTime = (Math.random() * 90 + 10) * 10;
+    const randomTime = (Math.random() * 90 + 10) * 1000;
 
     gameTimer = setTimeout(() => {
         if (!gameActive && Math.random() < spawnChance) {
@@ -162,7 +168,11 @@ function startSnake(context: vscode.ExtensionContext) {
     }
 
     function step() {
-        if (!gameActive || !safeEditor) return;
+        // --- FIX: end game if editor disappears mid-game ---
+        if (!gameActive || !safeEditor || safeEditor.document.isClosed) {
+            gameOver();
+            return;
+        }
 
         const head = snake[0];
         const newHead: Position = {
@@ -232,16 +242,19 @@ function startSnake(context: vscode.ExtensionContext) {
         commandDisposables = [];
     }
 
-    const focusHandler = vscode.window.onDidChangeActiveTextEditor(e => {
-        if (gameActive && e !== safeEditor) {
-            vscode.window.showTextDocument(safeEditor.document, {
-                viewColumn: safeEditor.viewColumn,
-                preserveFocus: false
-            });
+    // --- FIX: instead of forcing focus, just end game if editor/tab changes ---
+    const closeHandler = vscode.workspace.onDidCloseTextDocument(docClosed => {
+        if (gameActive && docClosed === safeEditor.document) {
+            gameOver();
         }
     });
-    commandDisposables.push(focusHandler);
-    context.subscriptions.push(focusHandler);
+    const changeHandler = vscode.window.onDidChangeActiveTextEditor(e => {
+        if (gameActive && e !== safeEditor) {
+            gameOver();
+        }
+    });
+    commandDisposables.push(closeHandler, changeHandler);
+    context.subscriptions.push(closeHandler, changeHandler);
 
     draw();
     interval = setInterval(step, 200);
