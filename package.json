@@ -5,8 +5,9 @@
   "version": "1.0.2",
   "publisher": "Theerttha",
   "engines": {
-    "vscode": "^1.102.0"
+    "vscode": "^1.103.0"
   },
+  "icon":"logo.jpg",
   "categories": [
     "Other"
   ],
