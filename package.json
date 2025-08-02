@@ -2,7 +2,7 @@
   "name": "below-c-level",
   "displayName": "below_c_level",
   "description": "The most useless VS Code extension ever created",
-  "version": "0.0.1",
+  "version": "1.0.2",
   "publisher": "Theerttha",
   "engines": {
     "vscode": "^1.102.0"
@@ -20,7 +20,7 @@
       },
       {
         "command": "below-c-level.nameChanger",
-        "title": "Below C Level: Shake it"
+        "title": "Below C Level: Shakespearean Code"
       },
       {
         "command": "below-c-level.snake",
@@ -44,7 +44,7 @@
       },
       {
         "command": "below-c-level.openDashboard",
-        "title": "Below C Level: Open Dashboard"
+        "title": "Below C Level: Dashboard"
       },
       {
         "command": "below-c-level.openSettings",
@@ -52,11 +52,15 @@
       },
       {
         "command": "below-c-level.generateComments",
-        "title": "Below C Level: Get comments"
+        "title": "Below C Level: Debate"
       },
       {
         "command": "below-c-level.fibonacci",
         "title": "Below C Level: Fibonacci"
+      },
+      {
+        "command": "below-c-level.subwaySurfers",
+        "title": "Below C Level: Subway Surfers"
       }
     ],
     "keybindings": [

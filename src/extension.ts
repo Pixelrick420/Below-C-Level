@@ -5,7 +5,7 @@ import { activateSnake } from './Snake/main';
 import { WebViewProvider } from './WebViewProvider';
 import { activateFibonacci } from './Fibonacci/main';
 import { commentGenerator } from './CommentGenerator/main';
-
+import { subwaySurfers } from './SubwaySurfers/main';
 // Global variable to track NSFW jokes status
 let nsfwJokesEnabled = false;
 
@@ -15,6 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
 	activateSnake(context);
 	activateFibonacci(context);
 	commentGenerator(context);
+	subwaySurfers(context);
 
 	const openPanelCommand = vscode.commands.registerCommand('below-c-level.openDashboard', () => {
 		WebViewProvider.createOrShow(context.extensionUri);

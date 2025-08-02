@@ -50,7 +50,6 @@ function showRandomJoke() {
         "Which is faster, Hot or cold?",
         "How do construction workers party?",
         "I WRITE MY JOKES IN CAPITALS."
-
     ];
     const Ans: string[] = [
         "Because they don't know how to join tables",
@@ -66,33 +65,58 @@ function showRandomJoke() {
         "Hot, because you can catch a cold",
         "They raise the roof.",
         "THIS ONE WAS WRITTEN IN PARIS."
-        
     ];
-    const QuestionDark: string[] = ["What's the difference between Harry Potter and the jews?",
+    const QuestionDark: string[] = [
+        "What's the difference between Harry Potter and the jews?",
         "What did the boy with no arms get for Christmas?",
-        "Why can't orphans play baseball?",
-       
+        "Why can't orphans play baseball?"
     ];
-    const AnsDark: string[] = ["Harry escaped the chamber",
+    const AnsDark: string[] = [
+        "Harry escaped the chamber",
         "I don't know, he hasn't opened it yet.",
         "They don't know where home is."
     ];
 
-    const length = Question.length;
-    console.log("length", length);
-    const index = Math.floor(Math.random() * (length));
-    console.log(index);
-    const chance = Math.random();
-    if (chance < 1) {
-        vscode.window.showInformationMessage(Question[index], 'Reveal').then((selection: any) => {
+    try {
+        // Safely check if NSFW jokes are enabled
+        let nsfwEnabled = false;
+        try {
+            nsfwEnabled = isNsfwJokesEnabled();
+        } catch (error) {
+            console.log("Error getting NSFW status, defaulting to false:", error);
+            nsfwEnabled = false;
+        }
+
+        const activeQuestions = nsfwEnabled ? Question.concat(QuestionDark) : Question;
+        const activeAnswers = nsfwEnabled ? Ans.concat(AnsDark) : Ans;
+
+        const length = activeQuestions.length;
+        console.log("length", length);
+        const index = Math.floor(Math.random() * length);
+        console.log(index);
+        const chance = Math.random();
+        
+        // Fixed: chance < 0.5 for 50% probability instead of < 1
+        if (chance < 0.5) {
+            vscode.window.showInformationMessage(activeQuestions[index], 'Reveal').then((selection: any) => {
+                if (selection === 'Reveal') {
+                    vscode.window.showInformationMessage(activeAnswers[index]);
+                }
+            });
+        } else {
+            // Inside joke: always show the same joke 50% of the time
+            vscode.window.showInformationMessage("Why is assembly language wet", 'Reveal').then((selection: any) => {
+                if (selection === 'Reveal') {
+                    vscode.window.showInformationMessage("Because it is below C level");
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Error in showRandomJoke:", error);
+        // Fallback to a simple joke without any complex logic
+        vscode.window.showInformationMessage("Why do programmers prefer dark mode?", 'Reveal').then((selection: any) => {
             if (selection === 'Reveal') {
-                vscode.window.showInformationMessage(Ans[index]);
-            }
-        });
-    } else {
-        vscode.window.showInformationMessage("Why is assembly language wet", 'Reveal').then((selection: any) => {
-            if (selection === 'Reveal') {
-                vscode.window.showInformationMessage(Ans[index]);
+                vscode.window.showInformationMessage("Because light attracts bugs!");
             }
         });
     }

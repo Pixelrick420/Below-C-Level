@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 
 function fibonacci(n: number): number {
-    if (n <= 1) return 1;
+    if (n <= 1) {
+        return 1;
+    }
     let a = 1, b = 2;
     for (let i = 2; i <= n; i++) {
         const temp = a + b;
@@ -36,7 +38,9 @@ function applyFibonacciIndent(doc: vscode.TextDocument, editor: vscode.TextEdito
         const trimmed = text.trim();
         
         // Skip empty lines
-        if (trimmed === "") continue;
+        if (trimmed === ""){
+            continue;
+        }
         
         const currentIndent = getIndentLevel(text);
         
@@ -58,7 +62,9 @@ function applyFibonacciIndent(doc: vscode.TextDocument, editor: vscode.TextEdito
                     nestingStack.pop();
                     if (nestingStack.length > 0) {
                         const stackLevel = nestingStack[nestingStack.length - 1];
-                        if (currentIndent >= stackLevel) break;
+                        if (currentIndent >= stackLevel){
+                            break;
+                        }
                     }
                 }
             }

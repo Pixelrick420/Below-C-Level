@@ -78,8 +78,10 @@ export class WebViewProvider {
     }
 
     private static updateContent(extensionUri: vscode.Uri) {
-        if (!WebViewProvider.currentPanel) return;
-
+        if (!WebViewProvider.currentPanel) {
+            return;
+        }
+        
         const config = vscode.workspace.getConfiguration('belowCLevel');
         const settings = {
             autoNameChange: config.get<boolean>('autoNameChange', false),
