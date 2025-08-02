@@ -1,8 +1,6 @@
 <img width="3188" height="1202" alt="frame (3)" src="https://github.com/user-attachments/assets/517ad8e9-ad22-457d-9538-a9e62d137cd7" />
 
-
-# [Project Name] 🎯
-Below C Level
+# Below C Level 🎯
 
 ## Basic Details
 ### Team Name: Below C Level
@@ -14,22 +12,22 @@ Below C Level
 ### Project Description
 It is a vscode extension with the following functions:
 
-Snake Game in Code
+- Snake Game in Code
 A fully interactive snake game runs between your code lines. The snake slithers across your editor, “eating” your code as you play. Control the snake using the arrow keys directly inside VS Code.
 
-Shakespearean Variable Renamer
+- Shakespearean Variable Renamer
 All variable names in C and Python files are automatically transformed into over-the-top Shakespearean insults, adding dramatic flair to otherwise boring identifiers.
 
-Philosopher Comment Generator
+- Philosopher Comment Generator
 Injects pointless yet amusing dialogues between Aristotle and Plato into your code as comments, powered by an API key. Perfect for confusing future readers of your code.
 
-Fibonacci Indentation
+- Fibonacci Indentation
 In Python, nested blocks are indented according to the Fibonacci sequence rather than standard spaces, producing mathematically inspired (and utterly unreadable) formatting.
 
-Joke Box
+- Joke Box
 Random jokes are displayed as information pop-ups inside VS Code, giving comic relief while coding.
 
-Subway Surfers Distraction Mode
+- Subway Surfers Distraction Mode
 A looping Subway Surfers gameplay video plays on the right side of the screen, 
 
 ### The Problem (that doesn't exist)
@@ -64,12 +62,11 @@ For Software:
 - npm, VS Code, Claude
 
 ### Implementation
-For Software:
 # Installation
-[commands]
+download vscode extension 'below-c-level'
 
 # Run
-[commands]
+Use `ctrl + shift + p` and select dashboard to open extension settings.
 
 ### Project Documentation
 For Software:
