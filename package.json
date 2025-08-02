@@ -2,12 +2,12 @@
   "name": "below-c-level",
   "displayName": "below_c_level",
   "description": "The most useless VS Code extension ever created",
-  "version": "1.0.2",
+  "version": "2.0.2",
   "publisher": "Theerttha",
   "engines": {
-    "vscode": "^1.103.0"
+    "vscode": "^1.102.0"
   },
-  "icon":"logo.jpg",
+  "icon":"images/logo.png",
   "categories": [
     "Other"
   ],

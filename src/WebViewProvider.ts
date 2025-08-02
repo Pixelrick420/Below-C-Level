@@ -81,7 +81,7 @@ export class WebViewProvider {
         if (!WebViewProvider.currentPanel) {
             return;
         }
-        
+
         const config = vscode.workspace.getConfiguration('belowCLevel');
         const settings = {
             autoNameChange: config.get<boolean>('autoNameChange', false),
@@ -386,7 +386,7 @@ export class WebViewProvider {
 
             <div class="feature">
                 <div class="feature-header">
-                    <div class="feature-name">Tech Jokes</div>
+                    <div class="feature-name">Jokes</div>
                     <div class="status ${settings.autoJoke ? 'enabled' : ''}">
                         ${settings.autoJoke ? 'Auto enabled' : 'Manual only'}
                     </div>
