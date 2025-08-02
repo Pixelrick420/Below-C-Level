@@ -104,9 +104,20 @@ For Software:
 *Code editor window showing python code with fibonacci indentation*
 
 
-# Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
+<img width="1280" height="645" alt="image" src="https://github.com/user-attachments/assets/52f54b20-4969-4512-b5a4-f90c7580ce7c" />
+
+*Dashboard window showing joke notifications on the bottom right after clicking the tell joke button*
+
+
+<img width="1280" height="640" alt="image" src="https://github.com/user-attachments/assets/7e00628e-bae8-4a85-a5d0-77285ed7399d" />
+
+*Code editor window showing subway surfers gameplay on the right*
+
+
+<img width="893" height="488" alt="image" src="https://github.com/user-attachments/assets/371c06fd-542f-4c04-a672-151fe20a34a1" />
+
+*Vs code tab shown after pressing ctrl + shift + p*
+
 
 ### Project Demo
 # Video
