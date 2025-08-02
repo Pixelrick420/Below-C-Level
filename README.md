@@ -67,6 +67,12 @@ download vscode extension 'below-c-level'
 
 # Run
 Use `ctrl + shift + p` and select dashboard to open extension settings.
+In dashboard:
+- we have name changer with auto change option. user can input the given time in which the variable names are converted to Shakespearean insults.
+- there is option to auto spawn the snake game. user can input the chance rate at which snake might appear.
+- there is option to auto generate jokes in given time frame taken as input from the user
+- 
+Use `ctrl + shift + p` and select 'Below C Level: Get Joke' to activate the get joke feature
 
 ### Project Documentation
 For Software:
