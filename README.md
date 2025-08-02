@@ -72,11 +72,15 @@ In dashboard:
 - we have name changer with auto change option. user can input the given time in which the variable names are converted to Shakespearean insults.
 - there is option to auto spawn the snake game. user can input the chance rate at which snake might appear.
 - there is option to auto generate jokes in given time frame taken as input from the user
-- 
-Use `ctrl + shift + p` and select 'Below C Level: Get Joke' to activate the get joke feature
+- there is option to generate indentation with fibonacci sequence for nested blocks
 
-### Project Documentation
-For Software:
+Use `ctrl + shift + p`:
+- select 'Below C Level: Get Joke' to activate the get joke feature
+- select 'Below C Level: Debate' will generate conversation between Artistotle and Plato using groq api keys
+- select 'Below C Level: fibonacci' will indent pythons programs such that successive code blocks in a nested block have number of tabs=successive terms of the fibonacci sequence
+- select 'Below C Level: Snake' will start a snake game inside the code editor window. The snake grows as it consumes character of code. The only way to stop it is to consume the death apple
+- select 'Below C Level: Shakespearean Code': all variable names in the code will be converted to Shakesperean insults
+- select 'Below C Level: Subway Surfers': will start a subway surfers video on the right side of the vscode window
 
 # Screenshots 
 <img width="492" height="425" alt="image" src="https://github.com/user-attachments/assets/97a7575d-4dfc-4576-bf3e-156341690b7a" />
@@ -118,14 +122,6 @@ For Software:
 
 *Vs code tab shown after pressing ctrl + shift + p*
 
-
-### Project Demo
-# Video
-[Add your demo video link here]
-*Explain what the video demonstrates*
-
-# Additional Demos
-[Add any extra demo materials/links]
 
 ## Team Contributions
 - Theerttha S: Get Joke, Fibonacci and subway surfers function.
