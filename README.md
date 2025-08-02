@@ -20,6 +20,7 @@ All variable names in C and Python files are automatically transformed into over
 
 - Philosopher Comment Generator
 Injects pointless yet amusing dialogues between Aristotle and Plato into your code as comments, powered by an API key. Perfect for confusing future readers of your code.
+The debates are generated through calls to the groq api.
 
 - Fibonacci Indentation
 In Python, nested blocks are indented according to the Fibonacci sequence rather than standard spaces, producing mathematically inspired (and utterly unreadable) formatting.
@@ -59,7 +60,7 @@ For Software:
 - Typescript
 - Yeoman
 - VS Code, dotenv, path, node
-- npm, VS Code, Claude
+- npm, VS Code, Claude, Groq
 
 ### Implementation
 # Installation
@@ -77,15 +78,21 @@ Use `ctrl + shift + p` and select 'Below C Level: Get Joke' to activate the get 
 ### Project Documentation
 For Software:
 
-# Screenshots (Add at least 3)
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+# Screenshots 
+<img width="492" height="425" alt="image" src="https://github.com/user-attachments/assets/97a7575d-4dfc-4576-bf3e-156341690b7a" />
+*Code editor window after finishing a snake game*
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+<img width="1590" height="647" alt="image" src="https://github.com/user-attachments/assets/7bd08eb9-20ad-4a49-9653-bd214b1223bf" />
+*Code editor window with philosophical debate*
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+<img width="684" height="768" alt="image" src="https://github.com/user-attachments/assets/2c2d2254-1717-403d-afe6-2cf374f647f6" />
+*The extension dashboard showing the vairous user options and settings*
+
+<img width="1063" height="741" alt="image" src="https://github.com/user-attachments/assets/0caa6f40-290b-4949-bd04-a54cf364bcbd" />
+*Code editor window showing user defined identifiers in c turned into shakesperian insults*
+
+<img width="594" height="157" alt="image" src="https://github.com/user-attachments/assets/5c626447-d2dc-409b-9d64-725f943e5523" />
+*Code editor window showing python code with fibonacci indentation*
 
 # Diagrams
 ![Workflow](Add your workflow/architecture diagram here)
